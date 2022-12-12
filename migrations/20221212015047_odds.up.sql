@@ -53,10 +53,13 @@ CREATE TABLE euro.odds (
     id SERIAL NOT NULL,
     match_id SERIAL NOT NULL,
     bookmaker_id SERIAL NOT NULL,
-    home_win NUMERIC(5,2) DEFAULT NULL,
-    draw NUMERIC(5,2) DEFAULT NULL,
-    away_win NUMERIC(5,2) DEFAULT NULL,
-    note VARCHAR(50) DEFAULT NULL,
+    home_win_start NUMERIC(5,2) DEFAULT 0.0,
+    draw_start NUMERIC(5,2) DEFAULT 0.0,
+    away_win_start NUMERIC(5,2) DEFAULT 0.0,
+    home_win_end NUMERIC(5,2) DEFAULT 0.0,
+    draw_end NUMERIC(5,2) DEFAULT 0.0,
+    away_win_end NUMERIC(5,2) DEFAULT 0.0,
+    note VARCHAR(50) DEFAULT 0.0,
 
     CONSTRAINT odds_pkey PRIMARY KEY (id)
 );
