@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.59"
-datas = { version = "0.1.0", path = "../datas" }
+data = { version = "0.1.0", path = "../data" }
 sqlx = { version = "0.6.2", features = ["postgres", "runtime-tokio-rustls", "chrono"] }
 tokio = { version = "1.23.0", features = ["full"] }
 sqlx_mock = "0.1.1"
+chrono = { version = "0.4.23", default-features = false }
 
 [dev-dependencies]
-

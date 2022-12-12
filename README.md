@@ -16,6 +16,6 @@ Have fun with this crate!
 
 This project is distributed under the terms of AGPL-3.0.
 
-See [LICENSE](LICENSE.md) for details.
+See [LICENSE](https://github.com/wangxinyang/europe-odds-analyze/blob/main/License) for details.
 
 Copyright 2023 Xinyang Wang

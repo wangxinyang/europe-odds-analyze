@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use datas::{BookMaker, League, Matches, Odds, OddsError, Team};
+use data::{BookMaker, League, Matches, Odds, OddsError, Team};
 use sqlx::{PgPool, Row};
 
 use crate::{BookMakerId, EuropeOdds, LeagueId, MatchId, OddsManager, TeamId};
@@ -42,8 +42,12 @@ impl EuropeOdds for OddsManager {
     }
 
     /// delete bookmaker data from persistence
-    async fn delete_bookermaker(&self, _id: BookMakerId) -> Result<(), OddsError> {
-        todo!()
+    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<i32, OddsError> {
+        let count = sqlx::query("DELETE FROM euro.bookmakers WHERE id = $1 RETURNING *")
+            .bind(id)
+            .execute(&self.conn)
+            .await?;
+        Ok(count.rows_affected() as i32)
     }
 
     /// add league data to persistence
@@ -161,5 +165,25 @@ mod tests {
         bm.name = "威廉希尔1".into();
         let bm1 = odds_manager.update_bookermaker(bm);
         assert_eq!(bm1.await.unwrap().name, "威廉希尔1");
+    }
+
+    #[tokio::test]
+    async fn delete_bookmaker_should_be_work() {
+        let config = TestConfig::new().await;
+        let odds_manager = OddsManager::new(config.tps.get_pool().await);
+        // add bookmaker
+        let bm = odds_manager
+            .create_bookermaker(BookMaker::new_pending(
+                "威廉希尔",
+                Some("https://sports.williamhill.com/betting/en-gb"),
+                Some("第一参考的博彩网站"),
+                NaiveDateTime::default(),
+                NaiveDateTime::default(),
+            ))
+            .await
+            .unwrap();
+        // delete bookmaker
+        let count = odds_manager.delete_bookermaker(bm.id).await.unwrap();
+        assert_eq!(count, 1);
     }
 }

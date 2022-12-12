@@ -5,7 +5,7 @@ pub use manager::*;
 pub use test_util::*;
 
 use async_trait::async_trait;
-use datas::{BookMaker, League, Matches, Odds, OddsError, Team};
+use data::{BookMaker, League, Matches, Odds, OddsError, Team};
 use sqlx::PgPool;
 
 type BookMakerId = i32;
@@ -22,7 +22,7 @@ pub trait EuropeOdds {
     async fn update_bookermaker(&self, bookmaker: BookMaker) -> Result<BookMaker, OddsError>;
 
     /// delete bookmaker data from persistence
-    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<(), OddsError>;
+    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<i32, OddsError>;
 
     /// add league data to persistence
     async fn create_league(&self, league: League) -> Result<League, OddsError>;
