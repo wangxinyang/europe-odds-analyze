@@ -1,6 +1,8 @@
 CREATE OR REPLACE FUNCTION euro.query(
-    bid SERIAL, 
-    mid SERIAL, 
+    bid INTEGER, 
+    mid INTEGER, 
+    lid INTEGER,
+    tid INTEGER,
     year INTEGER, 
     is_desc bool DEFAULT false,
     cursor bigint default null,
@@ -23,15 +25,24 @@ DECLARE
         END IF;
         -- format the qurey based on parameters
         _sql := format(
-            'select * from euro.odds where %s and %s order by id %s limit %L::integer',
+            'select odds.* from euro.matches matches, euro.odds odds 
+            where matches.id == odds.id and %s and %s and %s order by id %s limit %L::integer',
             CASE
-                WHEN is_desc THEN 'id < ' || cursor
-                ELSE 'id > ' || cursor
+                WHEN is_desc THEN 'odds.id < ' || cursor
+                ELSE 'odds.id > ' || cursor
+            END,
+            CASE
+                WHEN lid IS NULL AND tid IS NULL  THEN 'TRUE'
+                WHEN lid IS NULL THEN ('matches.home_team_id = ' || quote_literal(tid) 
+                                        or 'matches.away_team_id = ' || quote_literal(tid))
+                WHEN tid IS NULL THEN 'matches.league_id = ' || quote_literal(lid)
+                ELSE 'matches.league_id  =' || quote_literal(lid) || ' AND (matches.home_team_id = ' || quote_literal(tid) 
+                                        or 'matches.away_team_id = ' || quote_literal(tid) || ')'
             END,
             CASE
                 WHEN bid IS NULL AND mid IS NULL  THEN 'TRUE'
-                WHEN bid IS NULL THEN 'match_id = ' || quote_literal(mid)
-                WHEN mid IS NULL THEN 'bookmaker_id = ' || quote_literal(bid)
+                WHEN bid IS NULL THEN 'odds.match_id = ' || quote_literal(mid)
+                WHEN mid IS NULL THEN 'odds.bookmaker_id = ' || quote_literal(bid)
                 ELSE 'bookmaker_id =' || quote_literal(bid) || ' AND match_id = ' || quote_literal(mid)
             END,
             CASE

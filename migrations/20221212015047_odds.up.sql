@@ -6,7 +6,7 @@ CREATE TABLE euro.bookmakers (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT bookmakers_pkey PRIMARY KEY (id),
+    CONSTRAINT bookmakers_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE euro.leagues (
@@ -16,7 +16,7 @@ CREATE TABLE euro.leagues (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT leagues_pkey PRIMARY KEY (id),
+    CONSTRAINT leagues_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE euro.teams (
@@ -27,7 +27,7 @@ CREATE TABLE euro.teams (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT teams_pkey PRIMARY KEY (id),
+    CONSTRAINT teams_pkey PRIMARY KEY (id)
 );
 
 CREATE INDEX teams_league_id_idx ON euro.teams (league_id);
