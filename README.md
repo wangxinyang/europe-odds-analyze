@@ -1,20 +1,20 @@
-![](https://github.com/wangxinyang/rust-multi-template/workflows/build/badge.svg)
+![](https://github.com/wangxinyang/europe-odds-analyze/workflows/build/badge.svg)
 
 # europe-odds-analyze
 
-description about the crate
+a tool of logging european odds for predict the result of soccer games
 
 ## How to use it
 
 ```bash
-$ cargo generate --git https://github.com/wangxinyang/rust-multi-template.git
+
 ```
 
 Have fun with this crate!
 
 ## License
 
-This project is distributed under the terms of MIT.
+This project is distributed under the terms of AGPL-3.0.
 
 See [LICENSE](LICENSE.md) for details.
 
