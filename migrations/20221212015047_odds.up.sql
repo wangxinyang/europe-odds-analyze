@@ -61,7 +61,8 @@ CREATE TABLE euro.odds (
     away_win_end NUMERIC(5,2) DEFAULT 0.0,
     note VARCHAR(50) DEFAULT 0.0,
 
-    CONSTRAINT odds_pkey PRIMARY KEY (id)
+    CONSTRAINT odds_pkey PRIMARY KEY (id),
+    CONSTRAINT odds_match_id_fkey FOREIGN KEY (match_id) REFERENCES euro.matches(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE INDEX odds_match_id_idx ON euro.odds (match_id);
