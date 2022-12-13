@@ -10,7 +10,7 @@ pub struct Team {
     pub league_id: i32,
     #[builder(setter(into))]
     pub name: String,
-    #[builder(setter(into, strip_option))]
+    #[builder(default, setter(into, strip_option))]
     pub note: Option<String>,
     #[builder(default)]
     pub created_at: NaiveDateTime,

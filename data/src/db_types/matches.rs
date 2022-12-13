@@ -18,7 +18,9 @@ pub struct Matches {
     pub away_team: String,
     #[builder(setter(strip_option))]
     pub game_time: NaiveDateTime,
-    #[builder(setter(into, strip_option))]
+    #[builder(default, setter(into, strip_option))]
+    pub game_result: Option<String>,
+    #[builder(default, setter(into, strip_option))]
     pub note: Option<String>,
     #[builder(default)]
     pub created_at: NaiveDateTime,
