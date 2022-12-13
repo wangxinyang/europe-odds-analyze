@@ -5,7 +5,11 @@ fn main() {
     tracing_subscriber::fmt::init();
 
     let options = eframe::NativeOptions {
-        maximized: true,
+        transparent: true,
+        fullscreen: false,
+        resizable: false,
+        min_window_size: Some(egui::vec2(800.0, 600.0)),
+        initial_window_size: Some(egui::vec2(800.0, 600.0)),
         ..Default::default()
     };
     eframe::run_native(

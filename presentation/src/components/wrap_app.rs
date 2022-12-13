@@ -3,13 +3,13 @@ use crate::{BookMakers, Leagues};
 /// bookmaker app
 #[derive(Default)]
 pub struct BookMakersApp {
-    _book_makers: BookMakers,
+    book_makers: BookMakers,
 }
 
 impl eframe::App for BookMakersApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.label("bookmaker11");
+            self.book_makers.ui(ui);
         });
     }
 }
@@ -116,8 +116,6 @@ impl eframe::App for EuroOddsRecoder {
                 ui.vertical_centered(|ui| {
                     ui.heading("✒ Menus");
                 });
-
-                ui.separator();
 
                 self.menu_contents(ui, frame);
             });
