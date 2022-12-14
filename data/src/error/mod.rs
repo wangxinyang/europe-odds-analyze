@@ -4,6 +4,12 @@ use thiserror::Error;
 pub enum OddsError {
     // #[error("Eframe error")]
     // EframeError(eframe::EframeError),
+    #[error("Failed to read configuration file")]
+    ConfigReadError,
+
+    #[error("Failed to parse configuration file")]
+    ConfigParseError,
+
     #[error("Database error")]
     DbError(sqlx::Error),
 

@@ -1,12 +1,21 @@
 use async_trait::async_trait;
-use data::{BookMaker, League, MatchInfo, Matches, Odds, OddsError, Team};
-use sqlx::{PgPool, Row};
+use data::{BookMaker, DbConfig, League, MatchInfo, Matches, Odds, OddsError, Team};
+use sqlx::{postgres::PgPoolOptions, PgPool, Row};
 
 use crate::{BookMakerId, EuropeOdds, LeagueId, MatchId, OddsManager, TeamId};
 
 impl OddsManager {
     pub fn new(conn: PgPool) -> Self {
         Self { conn }
+    }
+
+    pub async fn from_config(config: &DbConfig) -> Result<Self, OddsError> {
+        let url = config.url();
+        let conn = PgPoolOptions::new()
+            .max_connections(config.max_connections)
+            .connect(&url)
+            .await?;
+        Ok(Self::new(conn))
     }
 }
 
