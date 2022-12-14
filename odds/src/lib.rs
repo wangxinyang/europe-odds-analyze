@@ -16,13 +16,16 @@ type MatchId = i32;
 #[async_trait]
 pub trait EuropeOdds {
     /// add bookmaker data to persistence
-    async fn create_bookermaker(&self, bookmaker: BookMaker) -> Result<BookMaker, OddsError>;
+    async fn list_bookermaker(&self) -> Result<Vec<BookMaker>, OddsError>;
+
+    /// add bookmaker data to persistence
+    async fn create_bookermaker(&self, bookmaker: BookMaker) -> Result<Vec<BookMaker>, OddsError>;
 
     /// update bookmaker data to persistence
-    async fn update_bookermaker(&self, bookmaker: BookMaker) -> Result<BookMaker, OddsError>;
+    async fn update_bookermaker(&self, bookmaker: BookMaker) -> Result<Vec<BookMaker>, OddsError>;
 
     /// delete bookmaker data from persistence
-    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<i32, OddsError>;
+    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<Vec<BookMaker>, OddsError>;
 
     /// add league data to persistence
     async fn create_league(&self, league: League) -> Result<League, OddsError>;

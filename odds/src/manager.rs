@@ -22,8 +22,19 @@ impl OddsManager {
 #[async_trait]
 impl EuropeOdds for OddsManager {
     /// add bookmaker data to persistence
-    async fn create_bookermaker(&self, mut bookmaker: BookMaker) -> Result<BookMaker, OddsError> {
-        println!("step into create_bookermaker");
+    async fn list_bookermaker(&self) -> Result<Vec<BookMaker>, OddsError> {
+        let book_makers = sqlx::query_as("SELECT * FROM euro.bookmakers")
+            .fetch_all(&self.conn)
+            .await?;
+
+        Ok(book_makers)
+    }
+
+    /// add bookmaker data to persistence
+    async fn create_bookermaker(
+        &self,
+        mut bookmaker: BookMaker,
+    ) -> Result<Vec<BookMaker>, OddsError> {
         let id = sqlx::query(
             "INSERT INTO euro.bookmakers (name, url, note) VALUES ($1, $2, $3) RETURNING id",
         )
@@ -35,12 +46,14 @@ impl EuropeOdds for OddsManager {
         .get(0);
 
         bookmaker.id = id;
-        Ok(bookmaker)
+
+        let book_makers = self.list_bookermaker().await?;
+        Ok(book_makers)
     }
 
     /// update bookmaker data to persistence
-    async fn update_bookermaker(&self, bookmaker: BookMaker) -> Result<BookMaker, OddsError> {
-        let bm = sqlx::query_as(
+    async fn update_bookermaker(&self, bookmaker: BookMaker) -> Result<Vec<BookMaker>, OddsError> {
+        sqlx::query(
             "UPDATE euro.bookmakers SET name = $1, url = $2, note = $3 WHERE id = $4 RETURNING *",
         )
         .bind(&bookmaker.name)
@@ -49,16 +62,20 @@ impl EuropeOdds for OddsManager {
         .bind(bookmaker.id)
         .fetch_one(&self.conn)
         .await?;
-        Ok(bm)
+
+        let book_makers = self.list_bookermaker().await?;
+        Ok(book_makers)
     }
 
     /// delete bookmaker data from persistence
-    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<i32, OddsError> {
-        let count = sqlx::query("DELETE FROM euro.bookmakers WHERE id = $1 RETURNING *")
+    async fn delete_bookermaker(&self, id: BookMakerId) -> Result<Vec<BookMaker>, OddsError> {
+        sqlx::query("DELETE FROM euro.bookmakers WHERE id = $1 RETURNING *")
             .bind(id)
             .execute(&self.conn)
             .await?;
-        Ok(count.rows_affected() as i32)
+
+        let book_makers = self.list_bookermaker().await?;
+        Ok(book_makers)
     }
 
     /// add league data to persistence
@@ -272,11 +289,34 @@ mod tests {
             )
             .await
             .unwrap();
-        assert!(bm.id != 0);
+        assert_eq!(bm.len(), 1);
     }
 
     #[tokio::test]
     async fn update_bookmaker_should_be_work() {
+        let config = TestConfig::new().await;
+        let odds_manager = OddsManager::new(config.tps.get_pool().await);
+        // add bookmaker
+        let mut bms = odds_manager
+            .create_bookermaker(
+                BookMakerBuilder::default()
+                    .name("威廉希尔")
+                    .url("https://sports.williamhill.com/betting/en-gb")
+                    .note("第一参考的博彩网站")
+                    .build()
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        // update bookmaker
+        let mut bm = bms.pop().unwrap();
+        bm.name = "威廉希尔1".into();
+        let mut bm1 = odds_manager.update_bookermaker(bm).await.unwrap();
+        assert_eq!(bm1.pop().unwrap().name, "威廉希尔1");
+    }
+
+    #[tokio::test]
+    async fn delete_bookmaker_should_be_work() {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         // add bookmaker
@@ -291,31 +331,12 @@ mod tests {
             )
             .await
             .unwrap();
-        // update bookmaker
-        bm.name = "威廉希尔1".into();
-        let bm1 = odds_manager.update_bookermaker(bm);
-        assert_eq!(bm1.await.unwrap().name, "威廉希尔1");
-    }
-
-    #[tokio::test]
-    async fn delete_bookmaker_should_be_work() {
-        let config = TestConfig::new().await;
-        let odds_manager = OddsManager::new(config.tps.get_pool().await);
-        // add bookmaker
-        let bm = odds_manager
-            .create_bookermaker(
-                BookMakerBuilder::default()
-                    .name("威廉希尔")
-                    .url("https://sports.williamhill.com/betting/en-gb")
-                    .note("第一参考的博彩网站")
-                    .build()
-                    .unwrap(),
-            )
+        // delete bookmaker
+        let bms = odds_manager
+            .delete_bookermaker(bm.pop().unwrap().id)
             .await
             .unwrap();
-        // delete bookmaker
-        let count = odds_manager.delete_bookermaker(bm.id).await.unwrap();
-        assert_eq!(count, 1);
+        assert_eq!(bms.len(), 0);
     }
 
     #[tokio::test]
