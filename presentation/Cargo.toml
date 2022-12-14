@@ -17,3 +17,4 @@ tracing-subscriber = "0.3"
 tokio = { version = "1.14", features = ["full"] }
 data = { version = "0.1.0", path = "../data" }
 odds = { version = "0.1.0", path = "../odds" }
+anyhow = "1.0.66"

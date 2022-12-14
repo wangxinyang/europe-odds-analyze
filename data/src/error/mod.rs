@@ -15,6 +15,9 @@ pub enum OddsError {
 
     #[error("No result found by the given condition")]
     NotFound,
+
+    #[error("No Error has founded")]
+    None,
 }
 
 impl From<sqlx::Error> for OddsError {

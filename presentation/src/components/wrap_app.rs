@@ -1,15 +1,28 @@
+use odds::OddsManager;
+use std::sync::{mpsc::Receiver, Arc};
+
 use crate::{BookMakers, Leagues};
 
 /// bookmaker app
-#[derive(Default)]
+// #[derive(Default)]
 pub struct BookMakersApp {
     book_makers: BookMakers,
+    odds_manager: Arc<OddsManager>,
+}
+
+impl BookMakersApp {
+    pub fn new(odds_manager: Arc<OddsManager>) -> Self {
+        Self {
+            book_makers: BookMakers::default(),
+            odds_manager,
+        }
+    }
 }
 
 impl eframe::App for BookMakersApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            self.book_makers.ui(ui);
+            self.book_makers.ui(ui, self.odds_manager.clone());
         });
     }
 }
@@ -17,6 +30,16 @@ impl eframe::App for BookMakersApp {
 #[derive(Default)]
 pub struct LeaguesApp {
     _league: Leagues,
+    // _odds_manager: Arc<OddsManager>,
+}
+
+impl LeaguesApp {
+    pub fn _new(_odds_manager: Arc<OddsManager>) -> Self {
+        Self {
+            _league: Leagues::default(),
+            // _odds_manager: odds_manager,
+        }
+    }
 }
 
 impl eframe::App for LeaguesApp {
@@ -28,11 +51,10 @@ impl eframe::App for LeaguesApp {
 }
 
 //----------------------------------------------------------------
-#[derive(Default)]
+// #[derive(Default)]
 pub struct State {
     book_maker: BookMakersApp,
     league: LeaguesApp,
-
     /// selected anchor
     selected_anchor: String,
 }
@@ -41,16 +63,17 @@ pub struct EuroOddsRecoder {
     state: State,
 }
 
-impl Default for EuroOddsRecoder {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl EuroOddsRecoder {
-    pub fn new() -> Self {
+    pub fn new(rx: Receiver<OddsManager>) -> Self {
+        let odds_manager = rx.try_recv().expect("Get OddsManager failed");
+        let odds_manager = Arc::new(odds_manager);
         Self {
-            state: State::default(),
+            state: State {
+                book_maker: BookMakersApp::new(odds_manager),
+                // league: LeaguesApp::new(odds_manager.clone()),
+                league: LeaguesApp::default(),
+                selected_anchor: "bookmakers".to_string(),
+            },
         }
     }
 
