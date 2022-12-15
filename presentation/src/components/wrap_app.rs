@@ -1,7 +1,7 @@
 use odds::OddsManager;
 use std::sync::{mpsc::Receiver, Arc};
 
-use crate::{BookMakers, Leagues};
+use crate::{define_my_font, initial_central_panel_frame, BookMakers, Leagues};
 
 /// bookmaker app
 // #[derive(Default)]
@@ -21,7 +21,8 @@ impl BookMakersApp {
 
 impl eframe::App for BookMakersApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        let frame = initial_central_panel_frame();
+        egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
             self.book_makers.ui(ui, self.odds_manager.clone());
         });
     }
@@ -130,9 +131,12 @@ impl EuroOddsRecoder {
 
 impl eframe::App for EuroOddsRecoder {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        // define font
+        ctx.set_fonts(define_my_font());
+        // ctx.set_pixels_per_point(2.0);
         egui::SidePanel::left("menu")
-            .max_width(400.0)
-            .min_width(400.0)
+            .max_width(200.0)
+            .min_width(200.0)
             .resizable(false)
             .show(ctx, |ui| {
                 // add bookmakers

@@ -15,8 +15,8 @@ async fn main() -> Result<(), OddsError> {
         transparent: true,
         fullscreen: false,
         resizable: false,
-        min_window_size: Some(egui::vec2(1420.0, 1024.0)),
-        initial_window_size: Some(egui::vec2(1420.0, 1024.0)),
+        min_window_size: Some(egui::vec2(1400.0, 800.0)),
+        initial_window_size: Some(egui::vec2(1400.0, 800.0)),
         ..Default::default()
     };
     eframe::run_native(

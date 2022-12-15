@@ -23,7 +23,7 @@ impl OddsManager {
 impl EuropeOdds for OddsManager {
     /// add bookmaker data to persistence
     async fn list_bookermaker(&self) -> Result<Vec<BookMaker>, OddsError> {
-        let book_makers = sqlx::query_as("SELECT * FROM euro.bookmakers")
+        let book_makers = sqlx::query_as("SELECT * FROM euro.bookmakers ORDER BY created_at DESC")
             .fetch_all(&self.conn)
             .await?;
 

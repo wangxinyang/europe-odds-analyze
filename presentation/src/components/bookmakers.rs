@@ -1,4 +1,5 @@
-use egui::Ui;
+use egui::{Color32, RichText, Ui};
+use egui_extras::Column;
 use odds::{EuropeOdds, OddsManager};
 use std::sync::{
     mpsc::{Receiver, Sender},
@@ -89,47 +90,58 @@ impl BookMakers {
         }
 
         ui.vertical_centered(|ui| {
-            ui.heading("Bookmaker Settings");
-
-            ui.separator();
-
-            // Error message window show or close
-            egui::Window::new("Error")
-                .open(&mut self.init.open.clone())
-                .show(ui.ctx(), |ui| {
-                    ui.label(self.init.err.clone());
-                    if ui.button("OK").clicked() {
-                        self.init.open = false;
-                    }
-                });
-
-            // generate the input form area
-            self.integrate_input_form(ui, manager);
-
-            ui.separator();
-
-            initial_strip_layout(ui, |ui| self.table_ui(ui));
+            ui.heading("📚 Bookmaker Settings");
         });
+
+        ui.add_space(20.);
+        ui.separator();
+
+        // Error message window show or close
+        egui::Window::new("Error")
+            .open(&mut self.init.open.clone())
+            .show(ui.ctx(), |ui| {
+                ui.label(self.init.err.clone());
+                if ui.button("OK").clicked() {
+                    self.init.open = false;
+                }
+            });
+
+        // generate the input form area
+        self.integrate_input_form(ui, manager);
+
+        ui.add_space(100.);
+
+        ui.separator();
+        initial_strip_layout(ui, |ui| self.table_ui(ui));
     }
 
+    /// integrate_input_form
     fn integrate_input_form(&mut self, ui: &mut Ui, manager: Arc<OddsManager>) {
         ui.horizontal(|ui| {
-            ui.label("Name:");
-            ui.text_edit_singleline(&mut self.form.name);
+            ui.label("公司名称:");
+            ui.label(RichText::new("*").color(Color32::RED));
+            ui.text_edit_singleline(&mut self.form.name)
+                .on_hover_text("请输入公司名称,必须填写");
         });
 
         ui.separator();
+        ui.add_space(20.);
 
         ui.horizontal(|ui| {
-            ui.label("Url:");
-            ui.text_edit_singleline(&mut self.form.url);
+            ui.label("官网:");
+            ui.add_space(38.);
+            ui.text_edit_singleline(&mut self.form.url)
+                .on_hover_text("请输入官网地址");
         });
 
         ui.separator();
+        ui.add_space(20.);
 
         ui.horizontal(|ui| {
-            ui.label("Note:");
-            ui.text_edit_singleline(&mut self.form.note);
+            ui.label("备注:");
+            ui.add_space(38.);
+            ui.text_edit_singleline(&mut self.form.note)
+                .on_hover_text("请输入备注信息");
         });
 
         let book_maker = BookMakerBuilder::default()
@@ -140,38 +152,71 @@ impl BookMakers {
             .unwrap();
 
         ui.separator();
+        ui.add_space(58.);
 
-        if ui.button("save").clicked() {
-            save_bookmaker_form(
-                manager,
-                book_maker,
-                self.channel.tx.clone(),
-                self.channel.error_tx.clone(),
-                ui.ctx().clone(),
-            );
-            // clear input
-            self.form.name = Default::default();
-            self.form.url = Default::default();
-            self.form.note = Default::default();
-        }
+        ui.vertical_centered(|ui| {
+            if ui
+                .button(RichText::new("保存").color(Color32::RED).size(15.0))
+                .clicked()
+            {
+                if self.form.name.is_empty() {
+                    self.init.err = "请输入公司名称".into();
+                    self.init.open = true;
+                } else {
+                    save_bookmaker_form(
+                        manager,
+                        book_maker,
+                        self.channel.tx.clone(),
+                        self.channel.error_tx.clone(),
+                        ui.ctx().clone(),
+                    );
+                    // clear input
+                    self.form.name = Default::default();
+                    self.form.url = Default::default();
+                    self.form.note = Default::default();
+                }
+            }
+        });
+
+        ui.add_space(8.);
     }
 
+    /// table_ui
     fn table_ui(&mut self, ui: &mut egui::Ui) {
         let table = initial_table_layout(ui, self.form.table.striped);
 
         table
-            .header(50.0, |mut header| {
+            .column(Column::auto().resizable(true))
+            .column(Column::initial(150.).resizable(true))
+            .column(Column::initial(260.).resizable(true))
+            .column(Column::initial(150.).resizable(true))
+            .column(Column::remainder().resizable(true))
+            .min_scrolled_height(0.0)
+            .header(30.0, |mut header| {
                 header.col(|ui| {
-                    ui.strong("No.");
+                    ui.vertical_centered_justified(|ui| {
+                        ui.strong("No.").on_hover_text("No.");
+                    });
                 });
                 header.col(|ui| {
-                    ui.strong("Name");
+                    ui.vertical_centered_justified(|ui| {
+                        ui.strong("公司名称").on_hover_text("公司名称");
+                    });
                 });
                 header.col(|ui| {
-                    ui.strong("Url");
+                    ui.vertical_centered_justified(|ui| {
+                        ui.strong("官网").on_hover_text("官网");
+                    });
                 });
                 header.col(|ui| {
-                    ui.strong("Note");
+                    ui.vertical_centered_justified(|ui| {
+                        ui.strong("备注").on_hover_text("备注");
+                    });
+                });
+                header.col(|ui| {
+                    ui.vertical_centered_justified(|ui| {
+                        ui.strong("操作").on_hover_text("操作");
+                    });
                 });
             })
             .body(|mut body| {
@@ -181,17 +226,58 @@ impl BookMakers {
                     // let row_height = if is_thick { 30.0 } else { 18.0 };
                     body.row(row_height, |mut row| {
                         row.col(|ui| {
-                            ui.label(index.to_string());
+                            ui.vertical_centered(|ui| {
+                                ui.label((index + 1).to_string())
+                                    .on_hover_text((index + 1).to_string());
+                            });
                         });
                         row.col(|ui| {
                             // expanding_content(ui);
-                            ui.label(bms.name.clone());
+                            ui.vertical_centered(|ui| {
+                                ui.label(bms.name.clone()).on_hover_text(bms.name.clone());
+                            });
                         });
                         row.col(|ui| {
-                            ui.label(bms.url.clone().unwrap());
+                            ui.vertical_centered(|ui| {
+                                ui.label(bms.url.clone().unwrap())
+                                    .on_hover_text(bms.url.clone().unwrap());
+                            });
                         });
                         row.col(|ui| {
-                            ui.label(bms.note.clone().unwrap());
+                            ui.vertical_centered(|ui| {
+                                ui.label(bms.note.clone().unwrap())
+                                    .on_hover_text(bms.note.clone().unwrap());
+                            });
+                        });
+
+                        row.col(|ui| {
+                            if ui
+                                .button(RichText::new("更新").color(Color32::RED).size(15.))
+                                .clicked()
+                            {
+                                // save_bookmaker_form(
+                                //     manager,
+                                //     book_maker,
+                                //     self.channel.tx.clone(),
+                                //     self.channel.error_tx.clone(),
+                                //     ui.ctx().clone(),
+                                // );
+                                println!("update");
+                            }
+                            // ui.
+                            if ui
+                                .button(RichText::new("删除").color(Color32::RED).size(15.))
+                                .clicked()
+                            {
+                                // save_bookmaker_form(
+                                //     manager,
+                                //     book_maker,
+                                //     self.channel.tx.clone(),
+                                //     self.channel.error_tx.clone(),
+                                //     ui.ctx().clone(),
+                                // );
+                                println!("delete");
+                            }
                         });
                     });
                 }
