@@ -1,30 +1,42 @@
+use egui::Ui;
+use odds::{EuropeOdds, OddsManager};
 use std::sync::{
     mpsc::{Receiver, Sender},
     Arc,
 };
 
+use crate::{initial_strip_layout, initial_table_layout};
 use data::{BookMaker, BookMakerBuilder, OddsError};
-use egui::Ui;
-use egui_extras::{Column, Size, StripBuilder, TableBuilder};
-use odds::{EuropeOdds, OddsManager};
 
-pub struct TableDemo {
+struct BookMakerTable {
     list: Vec<BookMaker>,
     striped: bool,
 }
 
-pub struct BookMakers {
+struct BookMakerFormInit {
     first_load: bool,
     open: bool,
     err: String,
+}
+
+struct BookMakerForm {
     name: String,
     url: String,
     note: String,
-    table: TableDemo,
+    table: BookMakerTable,
+}
+
+struct BookMakerChannel {
     tx: Sender<Vec<BookMaker>>,
     rx: Receiver<Vec<BookMaker>>,
     error_tx: Sender<OddsError>,
     error_rx: Receiver<OddsError>,
+}
+
+pub struct BookMakers {
+    init: BookMakerFormInit,
+    form: BookMakerForm,
+    channel: BookMakerChannel,
 }
 
 impl Default for BookMakers {
@@ -32,132 +44,120 @@ impl Default for BookMakers {
         let (tx, rx) = std::sync::mpsc::channel();
         let (error_tx, error_rx) = std::sync::mpsc::channel();
         Self {
-            first_load: true,
-            open: false,
-            err: Default::default(),
-            name: Default::default(),
-            url: Default::default(),
-            note: Default::default(),
-            table: TableDemo {
-                striped: true,
-                list: vec![],
+            init: BookMakerFormInit {
+                first_load: true,
+                open: false,
+                err: Default::default(),
             },
-            tx,
-            rx,
-            error_tx,
-            error_rx,
+            form: BookMakerForm {
+                name: Default::default(),
+                url: Default::default(),
+                note: Default::default(),
+                table: BookMakerTable {
+                    striped: true,
+                    list: vec![],
+                },
+            },
+            channel: BookMakerChannel {
+                tx,
+                rx,
+                error_tx,
+                error_rx,
+            },
         }
     }
 }
 
 impl BookMakers {
     pub fn ui(&mut self, ui: &mut Ui, manager: Arc<OddsManager>) {
-        if self.first_load {
-            self.first_load = false;
-            list_bookmaker(
+        if self.init.first_load {
+            self.init.first_load = false;
+            get_book_maker_lists(
                 manager.clone(),
-                self.tx.clone(),
-                self.error_tx.clone(),
+                self.channel.tx.clone(),
+                self.channel.error_tx.clone(),
                 ui.ctx().clone(),
             );
         }
 
-        if let Ok(bm) = self.rx.try_recv() {
-            self.table.list = bm;
+        if let Ok(bm) = self.channel.rx.try_recv() {
+            self.form.table.list = bm;
         }
-        if let Ok(error) = self.error_rx.try_recv() {
-            self.err = error.to_string();
-            self.open = true;
+        if let Ok(error) = self.channel.error_rx.try_recv() {
+            self.init.err = error.to_string();
+            self.init.open = true;
         }
 
-        ui.label("bookmaker settings");
-        ui.separator();
+        ui.vertical_centered(|ui| {
+            ui.heading("Bookmaker Settings");
 
-        // Error message window show or close
-        egui::Window::new("Error")
-            .open(&mut self.open.clone())
-            .show(ui.ctx(), |ui| {
-                ui.label(self.err.clone());
-                if ui.button("OK").clicked() {
-                    self.open = false;
-                }
-            });
+            ui.separator();
 
+            // Error message window show or close
+            egui::Window::new("Error")
+                .open(&mut self.init.open.clone())
+                .show(ui.ctx(), |ui| {
+                    ui.label(self.init.err.clone());
+                    if ui.button("OK").clicked() {
+                        self.init.open = false;
+                    }
+                });
+
+            // generate the input form area
+            self.integrate_input_form(ui, manager);
+
+            ui.separator();
+
+            initial_strip_layout(ui, |ui| self.table_ui(ui));
+        });
+    }
+
+    fn integrate_input_form(&mut self, ui: &mut Ui, manager: Arc<OddsManager>) {
         ui.horizontal(|ui| {
             ui.label("Name:");
-            ui.text_edit_singleline(&mut self.name);
+            ui.text_edit_singleline(&mut self.form.name);
         });
 
         ui.separator();
 
         ui.horizontal(|ui| {
             ui.label("Url:");
-            ui.text_edit_singleline(&mut self.url);
+            ui.text_edit_singleline(&mut self.form.url);
         });
 
         ui.separator();
 
         ui.horizontal(|ui| {
             ui.label("Note:");
-            ui.text_edit_singleline(&mut self.note);
+            ui.text_edit_singleline(&mut self.form.note);
         });
 
         let book_maker = BookMakerBuilder::default()
-            .name(self.name.clone())
-            .url(self.url.clone())
-            .note(self.note.clone())
+            .name(self.form.name.clone())
+            .url(self.form.url.clone())
+            .note(self.form.note.clone())
             .build()
             .unwrap();
 
         ui.separator();
 
         if ui.button("save").clicked() {
-            save_bookmaker(
+            save_bookmaker_form(
                 manager,
                 book_maker,
-                self.tx.clone(),
-                self.error_tx.clone(),
+                self.channel.tx.clone(),
+                self.channel.error_tx.clone(),
                 ui.ctx().clone(),
             );
             // clear input
-            self.name = Default::default();
-            self.url = Default::default();
-            self.note = Default::default();
+            self.form.name = Default::default();
+            self.form.url = Default::default();
+            self.form.note = Default::default();
         }
-
-        ui.separator();
-
-        StripBuilder::new(ui)
-            .size(Size::remainder().at_least(100.0)) // for the table
-            .size(Size::exact(10.0)) // for the source code link
-            .vertical(|mut strip| {
-                strip.cell(|ui| {
-                    egui::ScrollArea::horizontal().show(ui, |ui| {
-                        self.table_ui(ui);
-                    });
-                });
-            });
     }
 
     fn table_ui(&mut self, ui: &mut egui::Ui) {
-        let table = TableBuilder::new(ui)
-            .striped(self.table.striped)
-            .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-            .column(Column::auto())
-            .column(Column::initial(100.0).resizable(false))
-            // .column(Column::initial(200.0).range(40.0..=300.0).resizable(true))
-            .column(
-                Column::initial(40.0)
-                    .at_least(40.0)
-                    .resizable(false)
-                    .clip(true),
-            )
-            .column(Column::remainder())
-            .min_scrolled_height(0.0);
-
-        // if let Some(row_nr) = self.table.scroll_to_row.take() {
-        //     table = table.scroll_to_row(row_nr, None);
-        // }
+        let table = initial_table_layout(ui, self.form.table.striped);
 
         table
             .header(50.0, |mut header| {
@@ -175,7 +175,7 @@ impl BookMakers {
                 });
             })
             .body(|mut body| {
-                for (index, bms) in self.table.list.iter().enumerate() {
+                for (index, bms) in self.form.table.list.iter().enumerate() {
                     // let is_thick = thick_row(row_index);
                     let row_height = 30.0;
                     // let row_height = if is_thick { 30.0 } else { 18.0 };
@@ -200,7 +200,7 @@ impl BookMakers {
 }
 
 /// get bookmakers
-fn list_bookmaker(
+fn get_book_maker_lists(
     odds_manager: Arc<OddsManager>,
     tx: Sender<Vec<BookMaker>>,
     err_tx: Sender<OddsError>,
@@ -221,7 +221,7 @@ fn list_bookmaker(
 }
 
 /// save the bookmaker info
-fn save_bookmaker(
+fn save_bookmaker_form(
     odds_manager: Arc<OddsManager>,
     book_maker: BookMaker,
     tx: Sender<Vec<BookMaker>>,
