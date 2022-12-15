@@ -7,14 +7,12 @@ use crate::{define_my_font, initial_central_panel_frame, BookMakers, Leagues};
 // #[derive(Default)]
 pub struct BookMakersApp {
     book_makers: BookMakers,
-    odds_manager: Arc<OddsManager>,
 }
 
 impl BookMakersApp {
     pub fn new(odds_manager: Arc<OddsManager>) -> Self {
         Self {
-            book_makers: BookMakers::default(),
-            odds_manager,
+            book_makers: BookMakers::new(odds_manager),
         }
     }
 }
@@ -23,30 +21,28 @@ impl eframe::App for BookMakersApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let frame = initial_central_panel_frame();
         egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
-            self.book_makers.ui(ui, self.odds_manager.clone());
+            self.book_makers.ui(ui);
         });
     }
 }
 //----------------------------------------------------------------
-#[derive(Default)]
 pub struct LeaguesApp {
-    _league: Leagues,
-    // _odds_manager: Arc<OddsManager>,
+    league: Leagues,
 }
 
 impl LeaguesApp {
-    pub fn _new(_odds_manager: Arc<OddsManager>) -> Self {
+    pub fn new(odds_manager: Arc<OddsManager>) -> Self {
         Self {
-            _league: Leagues::default(),
-            // _odds_manager: odds_manager,
+            league: Leagues::new(odds_manager),
         }
     }
 }
 
 impl eframe::App for LeaguesApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.label("league");
+        let frame = initial_central_panel_frame();
+        egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
+            self.league.ui(ui);
         });
     }
 }
@@ -70,9 +66,9 @@ impl EuroOddsRecoder {
         let odds_manager = Arc::new(odds_manager);
         Self {
             state: State {
-                book_maker: BookMakersApp::new(odds_manager),
+                book_maker: BookMakersApp::new(odds_manager.clone()),
                 // league: LeaguesApp::new(odds_manager.clone()),
-                league: LeaguesApp::default(),
+                league: LeaguesApp::new(odds_manager),
                 selected_anchor: "bookmakers".to_string(),
             },
         }

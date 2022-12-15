@@ -78,8 +78,17 @@ impl EuropeOdds for OddsManager {
         Ok(book_makers)
     }
 
+    /// get all league data
+    async fn list_leagues(&self) -> Result<Vec<League>, OddsError> {
+        let leagues = sqlx::query_as("SELECT * FROM euro.leagues ORDER BY created_at DESC")
+            .fetch_all(&self.conn)
+            .await?;
+
+        Ok(leagues)
+    }
+
     /// add league data to persistence
-    async fn create_league(&self, mut league: League) -> Result<League, OddsError> {
+    async fn create_league(&self, mut league: League) -> Result<Vec<League>, OddsError> {
         let id = sqlx::query("INSERT INTO euro.leagues (name, note) VALUES ($1, $2) RETURNING id")
             .bind(&league.name)
             .bind(&league.note)
@@ -88,33 +97,45 @@ impl EuropeOdds for OddsManager {
             .get(0);
 
         league.id = id;
-        Ok(league)
+        let leagues = self.list_leagues().await?;
+        Ok(leagues)
     }
 
     /// update league data to persistence
-    async fn update_league(&self, league: League) -> Result<League, OddsError> {
-        let lg = sqlx::query_as(
-            "UPDATE euro.leagues SET name = $1, note = $2 WHERE id = $3 RETURNING *",
-        )
-        .bind(&league.name)
-        .bind(&league.note)
-        .bind(league.id)
-        .fetch_one(&self.conn)
-        .await?;
-        Ok(lg)
+    async fn update_league(&self, league: League) -> Result<Vec<League>, OddsError> {
+        sqlx::query("UPDATE euro.leagues SET name = $1, note = $2 WHERE id = $3 RETURNING *")
+            .bind(&league.name)
+            .bind(&league.note)
+            .bind(league.id)
+            .fetch_one(&self.conn)
+            .await?;
+
+        let leagues = self.list_leagues().await?;
+        Ok(leagues)
     }
 
     /// delete league data from persistence
-    async fn delete_league(&self, id: LeagueId) -> Result<i32, OddsError> {
-        let count = sqlx::query("DELETE FROM euro.leagues WHERE id = $1 RETURNING *")
+    async fn delete_league(&self, id: LeagueId) -> Result<Vec<League>, OddsError> {
+        sqlx::query("DELETE FROM euro.leagues WHERE id = $1 RETURNING *")
             .bind(id)
             .execute(&self.conn)
             .await?;
-        Ok(count.rows_affected() as i32)
+
+        let leagues = self.list_leagues().await?;
+        Ok(leagues)
+    }
+
+    /// get all team data
+    async fn list_teams(&self) -> Result<Vec<Team>, OddsError> {
+        let teams = sqlx::query_as("SELECT * FROM euro.teams ORDER BY created_at DESC")
+            .fetch_all(&self.conn)
+            .await?;
+
+        Ok(teams)
     }
 
     /// add team data to persistence
-    async fn create_team(&self, mut team: Team) -> Result<Team, OddsError> {
+    async fn create_team(&self, mut team: Team) -> Result<Vec<Team>, OddsError> {
         let id = sqlx::query(
             "INSERT INTO euro.teams (name, league_id, note) VALUES ($1, $2, $3) RETURNING id",
         )
@@ -126,12 +147,14 @@ impl EuropeOdds for OddsManager {
         .get(0);
 
         team.id = id;
-        Ok(team)
+
+        let teams = self.list_teams().await?;
+        Ok(teams)
     }
 
     /// update team data to persistence
-    async fn update_team(&self, team: Team) -> Result<Team, OddsError> {
-        let tm = sqlx::query_as(
+    async fn update_team(&self, team: Team) -> Result<Vec<Team>, OddsError> {
+        sqlx::query(
             "UPDATE euro.teams SET name = $1, league_id = $2, note = $3 WHERE id = $4 RETURNING *",
         )
         .bind(&team.name)
@@ -141,17 +164,19 @@ impl EuropeOdds for OddsManager {
         .fetch_one(&self.conn)
         .await?;
 
-        Ok(tm)
+        let teams = self.list_teams().await?;
+        Ok(teams)
     }
 
     /// delete team data from persistence
-    async fn delete_team(&self, id: TeamId) -> Result<i32, OddsError> {
-        let count = sqlx::query("DELETE FROM euro.teams WHERE id = $1 RETURNING *")
+    async fn delete_team(&self, id: TeamId) -> Result<Vec<Team>, OddsError> {
+        sqlx::query("DELETE FROM euro.teams WHERE id = $1 RETURNING *")
             .bind(id)
             .execute(&self.conn)
             .await?;
 
-        Ok(count.rows_affected() as i32)
+        let teams = self.list_teams().await?;
+        Ok(teams)
     }
 
     /// add match data to persistence
@@ -348,7 +373,7 @@ mod tests {
             .create_league(LeagueBuilder::default().name("英超").build().unwrap())
             .await
             .unwrap();
-        assert!(bm.id != 0);
+        assert_eq!(bm.len(), 1);
     }
 
     #[tokio::test]
@@ -356,14 +381,15 @@ mod tests {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         // add league
-        let mut bm = odds_manager
+        let mut bms = odds_manager
             .create_league(LeagueBuilder::default().name("英超").build().unwrap())
             .await
             .unwrap();
         // update league info
+        let mut bm = bms.pop().unwrap();
         bm.name = "英超1".into();
         let bm1 = odds_manager.update_league(bm).await.unwrap();
-        assert_eq!(bm1.name, "英超1");
+        assert_eq!(bm1.get(0).unwrap().name, "英超1");
     }
 
     #[tokio::test]
@@ -371,13 +397,14 @@ mod tests {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         // add league
-        let bm = odds_manager
+        let mut bms = odds_manager
             .create_league(LeagueBuilder::default().name("英超").build().unwrap())
             .await
             .unwrap();
         // delete league info
-        let count = odds_manager.delete_league(bm.id).await.unwrap();
-        assert_eq!(count, 1);
+        let bm = bms.pop().unwrap();
+        let bm1 = odds_manager.delete_league(bm.id).await.unwrap();
+        assert_eq!(bm1.len(), 0);
     }
 
     #[tokio::test]
@@ -385,7 +412,7 @@ mod tests {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         // add team
-        let team = odds_manager
+        let mut teams = odds_manager
             .create_team(
                 TeamBuilder::default()
                     .name("曼联")
@@ -395,7 +422,8 @@ mod tests {
             )
             .await
             .unwrap();
-        assert!(team.id != 0);
+        assert_eq!(teams.len(), 1);
+        let team = teams.pop().unwrap();
         assert_eq!(1, team.league_id);
         assert_eq!("曼联", team.name);
     }
@@ -405,7 +433,7 @@ mod tests {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         // add team
-        let mut team = odds_manager
+        let mut teams = odds_manager
             .create_team(
                 TeamBuilder::default()
                     .name("曼联")
@@ -416,9 +444,10 @@ mod tests {
             .await
             .unwrap();
         // update team info
+        let mut team = teams.pop().unwrap();
         team.name = "利物浦".into();
         let team1 = odds_manager.update_team(team).await.unwrap();
-        assert_eq!(team1.name, "利物浦");
+        assert_eq!(team1.get(0).unwrap().name, "利物浦");
     }
 
     #[tokio::test]
@@ -426,7 +455,7 @@ mod tests {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         // add team
-        let team = odds_manager
+        let mut teams = odds_manager
             .create_team(
                 TeamBuilder::default()
                     .name("曼联")
@@ -437,8 +466,9 @@ mod tests {
             .await
             .unwrap();
         // delete team info
-        let count = odds_manager.delete_team(team.id).await.unwrap();
-        assert_eq!(count, 1);
+        let team = teams.pop().unwrap();
+        let team1 = odds_manager.delete_team(team.id).await.unwrap();
+        assert_eq!(team1.len(), 0);
     }
 
     #[tokio::test]

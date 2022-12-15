@@ -15,7 +15,7 @@ type MatchId = i32;
 
 #[async_trait]
 pub trait EuropeOdds {
-    /// add bookmaker data to persistence
+    /// get all bookmaker data
     async fn list_bookermaker(&self) -> Result<Vec<BookMaker>, OddsError>;
 
     /// add bookmaker data to persistence
@@ -27,23 +27,29 @@ pub trait EuropeOdds {
     /// delete bookmaker data from persistence
     async fn delete_bookermaker(&self, id: BookMakerId) -> Result<Vec<BookMaker>, OddsError>;
 
+    /// get all league data
+    async fn list_leagues(&self) -> Result<Vec<League>, OddsError>;
+
     /// add league data to persistence
-    async fn create_league(&self, league: League) -> Result<League, OddsError>;
+    async fn create_league(&self, league: League) -> Result<Vec<League>, OddsError>;
 
     /// update league data to persistence
-    async fn update_league(&self, league: League) -> Result<League, OddsError>;
+    async fn update_league(&self, league: League) -> Result<Vec<League>, OddsError>;
 
     /// delete league data from persistence
-    async fn delete_league(&self, id: LeagueId) -> Result<i32, OddsError>;
+    async fn delete_league(&self, id: LeagueId) -> Result<Vec<League>, OddsError>;
+
+    /// get all team data
+    async fn list_teams(&self) -> Result<Vec<Team>, OddsError>;
 
     /// add team data to persistence
-    async fn create_team(&self, team: Team) -> Result<Team, OddsError>;
+    async fn create_team(&self, team: Team) -> Result<Vec<Team>, OddsError>;
 
     /// update team data to persistence
-    async fn update_team(&self, team: Team) -> Result<Team, OddsError>;
+    async fn update_team(&self, team: Team) -> Result<Vec<Team>, OddsError>;
 
     /// delete team data from persistence
-    async fn delete_team(&self, id: TeamId) -> Result<i32, OddsError>;
+    async fn delete_team(&self, id: TeamId) -> Result<Vec<Team>, OddsError>;
 
     /// add match data to persistence
     async fn create_match_info(

@@ -18,6 +18,7 @@ struct BookMakerFormInit {
     first_load: bool,
     open: bool,
     err: String,
+    manager: Arc<OddsManager>,
 }
 
 struct BookMakerForm {
@@ -40,8 +41,8 @@ pub struct BookMakers {
     channel: BookMakerChannel,
 }
 
-impl Default for BookMakers {
-    fn default() -> Self {
+impl BookMakers {
+    pub fn new(manager: Arc<OddsManager>) -> Self {
         let (tx, rx) = std::sync::mpsc::channel();
         let (error_tx, error_rx) = std::sync::mpsc::channel();
         Self {
@@ -49,6 +50,7 @@ impl Default for BookMakers {
                 first_load: true,
                 open: false,
                 err: Default::default(),
+                manager,
             },
             form: BookMakerForm {
                 name: Default::default(),
@@ -67,14 +69,13 @@ impl Default for BookMakers {
             },
         }
     }
-}
 
-impl BookMakers {
-    pub fn ui(&mut self, ui: &mut Ui, manager: Arc<OddsManager>) {
+    pub fn ui(&mut self, ui: &mut Ui) {
+        // init the data
         if self.init.first_load {
             self.init.first_load = false;
             get_book_maker_lists(
-                manager.clone(),
+                self.init.manager.clone(),
                 self.channel.tx.clone(),
                 self.channel.error_tx.clone(),
                 ui.ctx().clone(),
@@ -89,6 +90,7 @@ impl BookMakers {
             self.init.open = true;
         }
 
+        // title
         ui.vertical_centered(|ui| {
             ui.heading("📚 Bookmaker Settings");
         });
@@ -107,11 +109,12 @@ impl BookMakers {
             });
 
         // generate the input form area
-        self.integrate_input_form(ui, manager);
+        self.integrate_input_form(ui, self.init.manager.clone());
 
         ui.add_space(100.);
 
         ui.separator();
+        // data list
         initial_strip_layout(ui, |ui| self.table_ui(ui));
     }
 
@@ -154,7 +157,23 @@ impl BookMakers {
         ui.separator();
         ui.add_space(58.);
 
-        ui.vertical_centered(|ui| {
+        ui.horizontal(|ui| {
+            ui.add_space(320.);
+
+            // query button
+            if ui
+                .button(RichText::new("查询").color(Color32::RED).size(15.0))
+                .clicked()
+            {
+                get_book_maker_lists(
+                    manager.clone(),
+                    self.channel.tx.clone(),
+                    self.channel.error_tx.clone(),
+                    ui.ctx().clone(),
+                );
+            }
+
+            // save button
             if ui
                 .button(RichText::new("保存").color(Color32::RED).size(15.0))
                 .clicked()
@@ -239,7 +258,7 @@ impl BookMakers {
                         });
                         row.col(|ui| {
                             ui.vertical_centered(|ui| {
-                                ui.label(bms.url.clone().unwrap())
+                                ui.hyperlink(bms.url.clone().unwrap())
                                     .on_hover_text(bms.url.clone().unwrap());
                             });
                         });
@@ -251,6 +270,7 @@ impl BookMakers {
                         });
 
                         row.col(|ui| {
+                            // update bookmaker info
                             if ui
                                 .button(RichText::new("更新").color(Color32::RED).size(15.))
                                 .clicked()
@@ -264,19 +284,19 @@ impl BookMakers {
                                 // );
                                 println!("update");
                             }
-                            // ui.
+
+                            // delete bookmaker info
                             if ui
                                 .button(RichText::new("删除").color(Color32::RED).size(15.))
                                 .clicked()
                             {
-                                // save_bookmaker_form(
-                                //     manager,
-                                //     book_maker,
-                                //     self.channel.tx.clone(),
-                                //     self.channel.error_tx.clone(),
-                                //     ui.ctx().clone(),
-                                // );
-                                println!("delete");
+                                delete(
+                                    self.init.manager.clone(),
+                                    bms.id,
+                                    self.channel.tx.clone(),
+                                    self.channel.error_tx.clone(),
+                                    ui.ctx().clone(),
+                                );
                             }
                         });
                     });
@@ -316,6 +336,28 @@ fn save_bookmaker_form(
 ) {
     tokio::spawn(async move {
         match odds_manager.create_bookermaker(book_maker).await {
+            Ok(bookmakers) => {
+                tx.send(bookmakers).unwrap();
+                ctx.request_repaint();
+            }
+            Err(err) => {
+                err_tx.send(err).unwrap();
+                ctx.request_repaint();
+            }
+        }
+    });
+}
+
+/// delete the bookmaker info
+fn delete(
+    odds_manager: Arc<OddsManager>,
+    id: i32,
+    tx: Sender<Vec<BookMaker>>,
+    err_tx: Sender<OddsError>,
+    ctx: egui::Context,
+) {
+    tokio::spawn(async move {
+        match odds_manager.delete_bookermaker(id).await {
             Ok(bookmakers) => {
                 tx.send(bookmakers).unwrap();
                 ctx.request_repaint();
