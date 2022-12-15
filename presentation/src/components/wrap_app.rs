@@ -4,7 +4,6 @@ use std::sync::{mpsc::Receiver, Arc};
 use crate::{define_my_font, initial_central_panel_frame, BookMakers, Leagues};
 
 /// bookmaker app
-// #[derive(Default)]
 pub struct BookMakersApp {
     book_makers: BookMakers,
 }

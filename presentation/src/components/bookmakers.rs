@@ -240,10 +240,7 @@ impl BookMakers {
             })
             .body(|mut body| {
                 for (index, bms) in self.form.table.list.iter().enumerate() {
-                    // let is_thick = thick_row(row_index);
-                    let row_height = 30.0;
-                    // let row_height = if is_thick { 30.0 } else { 18.0 };
-                    body.row(row_height, |mut row| {
+                    body.row(30., |mut row| {
                         row.col(|ui| {
                             ui.vertical_centered(|ui| {
                                 ui.label((index + 1).to_string())
