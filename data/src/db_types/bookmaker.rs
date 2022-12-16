@@ -1,8 +1,9 @@
 use chrono::NaiveDateTime;
 use derive_builder::Builder;
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
-#[derive(Debug, Builder, FromRow)]
+#[derive(Debug, Builder, FromRow, Serialize, Deserialize)]
 pub struct BookMaker {
     #[builder(default)]
     pub id: i32,

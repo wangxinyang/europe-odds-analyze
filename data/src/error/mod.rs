@@ -1,6 +1,7 @@
+use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Serialize)]
 pub enum OddsError {
     // #[error("Eframe error")]
     // EframeError(eframe::EframeError),
@@ -11,7 +12,7 @@ pub enum OddsError {
     ConfigParseError,
 
     #[error("Database error")]
-    DbError(sqlx::Error),
+    DbError(String),
 
     #[error("No result found by the given condition")]
     NotFound,
@@ -22,7 +23,7 @@ pub enum OddsError {
 
 impl From<sqlx::Error> for OddsError {
     fn from(err: sqlx::Error) -> Self {
-        OddsError::DbError(err)
+        OddsError::DbError(err.to_string())
     }
 }
 

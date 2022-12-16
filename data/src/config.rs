@@ -55,7 +55,7 @@ mod tests {
 
     #[test]
     fn config_should_be_loaded() {
-        let config = Config::from_file("../presentation/fixtures/config.yml").unwrap();
+        let config = Config::from_file("../odds-logger/tarui-src/fixtures/config.yml").unwrap();
         assert_eq!(
             config,
             Config {

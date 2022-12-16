@@ -1,6 +1,7 @@
 import { Button, Form, Input, Space, Table, Tag } from 'antd'
 import { useEffect } from 'react'
 import type { ColumnsType } from 'antd/es/table'
+import { invoke } from '@tauri-apps/api'
 
 const formItemLayout = {
   labelCol: { span: 4 },
@@ -18,6 +19,10 @@ interface DataType {
   name: string
   url: string
   note: string
+}
+
+interface BookMakers {
+  bookmaker: DataType[]
 }
 
 const columns: ColumnsType<DataType> = [
@@ -89,7 +94,16 @@ function BookMaker() {
     try {
       const values = await form.validateFields()
       // call rust async function
-
+      let lists = await invoke<BookMakers>('save_book_maker_info', { name: 'World' })
+      console.log(lists)
+      // lists.forEach((item) => {})
+      // lists.((item) => {
+      //   console.log(item)
+      // })
+      // // `invoke` 返回的是一个 Promise
+      // .then((res: BookMakers) => {
+      //   console.log(JSON.stringify(res))
+      // })
       console.log('Success:', values)
     } catch (errorInfo) {
       console.log('Failed:', errorInfo)

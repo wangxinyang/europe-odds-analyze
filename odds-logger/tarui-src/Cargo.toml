@@ -18,6 +18,10 @@ tauri-build = { version = "1.2.1", features = [] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.2.2", features = [] }
+tokio = { version = "1.14", features = ["full"] }
+tracing-subscriber = "0.3"
+odds = {path = "../../odds"}
+data = { path = "../../data"}
 
 [features]
 # by default Tauri runs in production mode
