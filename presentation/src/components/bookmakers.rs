@@ -6,7 +6,7 @@ use std::sync::{
     Arc,
 };
 
-use crate::{initial_strip_layout, initial_table_layout};
+use crate::{initial_strip_layout, initial_table_layout, MessageInfo};
 use data::{BookMaker, BookMakerBuilder, OddsError};
 
 struct BookMakerTable {
@@ -16,9 +16,9 @@ struct BookMakerTable {
 
 struct BookMakerFormInit {
     first_load: bool,
-    open: bool,
     err: String,
     manager: Arc<OddsManager>,
+    window: Vec<MessageInfo>,
 }
 
 struct BookMakerForm {
@@ -48,9 +48,9 @@ impl BookMakers {
         Self {
             init: BookMakerFormInit {
                 first_load: true,
-                open: false,
                 err: Default::default(),
                 manager,
+                window: vec![],
             },
             form: BookMakerForm {
                 name: Default::default(),
@@ -87,7 +87,8 @@ impl BookMakers {
         }
         if let Ok(error) = self.channel.error_rx.try_recv() {
             self.init.err = error.to_string();
-            self.init.open = true;
+            let message_info = MessageInfo { show_window: true };
+            self.init.window.push(message_info);
         }
 
         // title
@@ -99,14 +100,12 @@ impl BookMakers {
         ui.separator();
 
         // Error message window show or close
-        egui::Window::new("Error")
-            .open(&mut self.init.open.clone())
-            .show(ui.ctx(), |ui| {
-                ui.label(self.init.err.clone());
-                if ui.button("OK").clicked() {
-                    self.init.open = false;
-                }
-            });
+        for message in self.init.window.iter_mut() {
+            let mut is_open = message.show_window;
+            message.show(ui, &mut is_open, self.init.err.clone());
+            // will be false if user clicks the red close button
+            message.show_window = is_open;
+        }
 
         // generate the input form area
         self.integrate_input_form(ui, self.init.manager.clone());
@@ -180,7 +179,8 @@ impl BookMakers {
             {
                 if self.form.name.is_empty() {
                     self.init.err = "请输入公司名称".into();
-                    self.init.open = true;
+                    let message_info = MessageInfo { show_window: true };
+                    self.init.window.push(message_info);
                 } else {
                     save_bookmaker_form(
                         manager,
@@ -248,7 +248,6 @@ impl BookMakers {
                             });
                         });
                         row.col(|ui| {
-                            // expanding_content(ui);
                             ui.vertical_centered(|ui| {
                                 ui.label(bms.name.clone()).on_hover_text(bms.name.clone());
                             });
