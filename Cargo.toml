@@ -1,2 +1,2 @@
 [workspace]
-members = ["presentation", "odds", "data"]
+members = ["odds-logger/tarui-src", "presentation", "odds", "data"]
