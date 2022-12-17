@@ -1,8 +1,8 @@
-import { Alert, Button, Form, Input, message, Space, Table, Tag } from 'antd'
+import { Alert, Button, Form, Input, message, Popconfirm, Space, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
-import { error } from '../utils'
+import { error, success } from '../utils'
 
 function BookMaker() {
   const formItemLayout = {
@@ -51,9 +51,9 @@ function BookMaker() {
       key: 'action',
       render: (_, record, _index) => {
         return (
-          <Space size="middle">
-            <a onClick={() => handleDelete(record)}>Delete</a>
-          </Space>
+          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
+            <a>Delete</a>
+          </Popconfirm>
         )
       },
     },
@@ -92,23 +92,28 @@ function BookMaker() {
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
-
       // call rust async function
       let lists = await invoke<DataType[]>('save_book_maker_info', {
         name: values.name,
-        url: values.url,
-        note: values.note,
+        url: values.url == undefined ? '' : values.url,
+        note: values.note == undefined ? '' : values.note,
       })
       render_list(lists)
+      success(messageApi, 'Successful: 保存成功')
     } catch (errorInfo) {
-      error(messageApi, 'Failed: 保存公司数据失败, 请检查数据', 3)
+      error(messageApi, 'Failed: 保存失败, 请检查数据')
     }
   }
 
   const handleDelete = async (record: DataType) => {
-    let { id } = record
-    let lists = await invoke<DataType[]>('delete_book_maker_info', { id })
-    render_list(lists)
+    try {
+      let { id } = record
+      let lists = await invoke<DataType[]>('delete_book_maker_info', { id })
+      render_list(lists)
+      success(messageApi, 'Successful: 删除成功')
+    } catch (errorInfo) {
+      error(messageApi, 'Failed: 删除失败, 请检查数据')
+    }
   }
 
   return (

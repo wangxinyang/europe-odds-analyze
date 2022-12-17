@@ -1,6 +1,6 @@
 import { MessageInstance } from 'antd/es/message/interface'
 
-const success = (messageApi: MessageInstance, content: string, duration: number) => {
+const success = (messageApi: MessageInstance, content: string, duration: number = 3) => {
   messageApi.open({
     type: 'success',
     content,
@@ -8,7 +8,7 @@ const success = (messageApi: MessageInstance, content: string, duration: number)
   })
 }
 
-const error = (messageApi: MessageInstance, content: string, duration: number) => {
+const error = (messageApi: MessageInstance, content: string, duration: number = 3) => {
   messageApi.open({
     type: 'error',
     content,

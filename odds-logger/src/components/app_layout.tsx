@@ -52,14 +52,15 @@ function AppLayout() {
               style={{ height: '100%', borderRight: 0 }}>
               <SubMenu key="/" icon={<LoginOutlined />} title="赔率管理">
                 <Menu.Item key="1">
-                  <Link to="/">赔率公司</Link>
-                </Menu.Item>
-                <Menu.Item key="2">
-                  <Link to="/league">联赛</Link>
-                </Menu.Item>
-                <Menu.Item key="3">
                   <Link to="/team">球队</Link>
                 </Menu.Item>
+                <Menu.Item key="2">
+                  <Link to="/">赔率公司</Link>
+                </Menu.Item>
+                <Menu.Item key="3">
+                  <Link to="/league">联赛</Link>
+                </Menu.Item>
+
                 <Menu.Item key="4">
                   <Link to="/logger">赔率记录</Link>
                 </Menu.Item>
