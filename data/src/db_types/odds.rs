@@ -1,8 +1,10 @@
+use bigdecimal::BigDecimal;
 use derive_builder::Builder;
-use sqlx::{types::BigDecimal, FromRow};
+use serde::Serialize;
+use sqlx::FromRow;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Builder, FromRow)]
+#[derive(Debug, Clone, Builder, FromRow, Serialize)]
 pub struct Odds {
     #[builder(default)]
     pub id: i32,

@@ -127,9 +127,12 @@ impl EuropeOdds for OddsManager {
 
     /// get all team data
     async fn list_teams(&self) -> Result<Vec<Team>, OddsError> {
-        let teams = sqlx::query_as("SELECT * FROM euro.teams ORDER BY created_at DESC")
-            .fetch_all(&self.conn)
-            .await?;
+        let teams = sqlx::query_as(
+            "SELECT teams.*, leagues.name league_name FROM euro.teams teams,
+            euro.leagues leagues where teams.league_id = leagues.id ORDER BY teams.created_at DESC",
+        )
+        .fetch_all(&self.conn)
+        .await?;
 
         Ok(teams)
     }
@@ -411,12 +414,17 @@ mod tests {
     async fn create_team_should_be_work() {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
+        // add league
+        let mut leagues = odds_manager
+            .create_league(LeagueBuilder::default().name("英超").build().unwrap())
+            .await
+            .unwrap();
         // add team
         let mut teams = odds_manager
             .create_team(
                 TeamBuilder::default()
                     .name("曼联")
-                    .league_id(1)
+                    .league_id(leagues.pop().unwrap().id)
                     .build()
                     .unwrap(),
             )
@@ -432,12 +440,17 @@ mod tests {
     async fn update_team_should_be_work() {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
+        // add league
+        let mut leagues = odds_manager
+            .create_league(LeagueBuilder::default().name("英超").build().unwrap())
+            .await
+            .unwrap();
         // add team
         let mut teams = odds_manager
             .create_team(
                 TeamBuilder::default()
                     .name("曼联")
-                    .league_id(1)
+                    .league_id(leagues.pop().unwrap().id)
                     .build()
                     .unwrap(),
             )
@@ -454,12 +467,17 @@ mod tests {
     async fn delete_team_should_be_work() {
         let config = TestConfig::new().await;
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
+        // add league
+        let mut leagues = odds_manager
+            .create_league(LeagueBuilder::default().name("英超").build().unwrap())
+            .await
+            .unwrap();
         // add team
         let mut teams = odds_manager
             .create_team(
                 TeamBuilder::default()
                     .name("曼联")
-                    .league_id(1)
+                    .league_id(leagues.pop().unwrap().id)
                     .build()
                     .unwrap(),
             )

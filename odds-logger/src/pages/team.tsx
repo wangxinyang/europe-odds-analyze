@@ -1,4 +1,4 @@
-import { Alert, Button, Form, Input, message, Popconfirm, Space, Table, Tag } from 'antd'
+import { Button, Form, Input, message, Popconfirm, Select, Table } from 'antd'
 import { useEffect, useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
@@ -13,6 +13,13 @@ function Team() {
   const formTailLayout = {
     labelCol: { span: 4 },
     wrapperCol: { span: 8, offset: 4 },
+  }
+
+  interface LeagueDataType {
+    key: string
+    id: number
+    name: string
+    note: string
   }
 
   interface DataType {
@@ -33,8 +40,8 @@ function Team() {
     },
     {
       title: '联赛名',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'league_name',
+      key: 'league_name',
     },
     {
       title: '球队名',
@@ -60,32 +67,56 @@ function Team() {
   ]
 
   const [form] = Form.useForm()
+  const [leagueData, setLeagueData] = useState<LeagueDataType[]>([])
   const [data, setData] = useState<DataType[]>([])
   const [messageApi, contextHolder] = message.useMessage()
 
-  // render bookmaker list data in page
+  // render league list data in page
+  const render_league_list = (lists: LeagueDataType[]) => {
+    lists.map((item, index) => {
+      let data = { ...item, key: index.toString() }
+      setLeagueData((prev) => [...prev, data])
+    })
+  }
+
+  // render team list data in page
   const render_list = (lists: DataType[]) => {
     // clear data
     setData([])
     lists.map((item, index) => {
-      let data = { ...item, key: (index + 1).toString(), index: index + 1 }
+      console.log(item)
+
+      let data = { ...item, key: index.toString(), index: index + 1 }
       setData((prev) => [...prev, data])
     })
   }
 
-  // initial list data
+  // initial league list data
   useEffect(() => {
-    const get_lists = async () => {
+    const get_league_lists = async () => {
       let lists = await invoke<DataType[]>('get_league_lists')
+      render_league_list(lists)
+    }
+    get_league_lists()
+  }, [])
+
+  // initial team list data
+  useEffect(() => {
+    const get_team_lists = async () => {
+      let lists = await invoke<DataType[]>('get_team_lists')
       render_list(lists)
     }
-    get_lists()
+    get_team_lists()
   }, [])
 
   // query bookmaker list
   const handleSearchInfo = async () => {
-    let lists = await invoke<DataType[]>('get_league_lists')
-    render_list(lists)
+    try {
+      let lists = await invoke<DataType[]>('get_team_lists')
+      render_list(lists)
+    } catch (errorInfo) {
+      error(messageApi, 'Failed: 查询失败, 请检查数据')
+    }
   }
 
   // handle bookmaker save
@@ -93,7 +124,8 @@ function Team() {
     try {
       const values = await form.validateFields()
       // call rust async function
-      let lists = await invoke<DataType[]>('save_league_info', {
+      let lists = await invoke<DataType[]>('save_team_info', {
+        id: parseInt(values.league_id, 10),
         name: values.name,
         note: values.note == undefined ? '' : values.note,
       })
@@ -107,7 +139,7 @@ function Team() {
   const handleDelete = async (record: DataType) => {
     try {
       let { id } = record
-      let lists = await invoke<DataType[]>('delete_league_info', { id })
+      let lists = await invoke<DataType[]>('delete_team_info', { id })
       render_list(lists)
       success(messageApi, 'Successful: 删除成功')
     } catch (errorInfo) {
@@ -115,10 +147,51 @@ function Team() {
     }
   }
 
+  const onChange = (value: string) => {
+    console.log(`selected ${value}`)
+  }
+
+  const onSearch = (value: string) => {
+    console.log('search:', value)
+  }
+
+  const options = (data: LeagueDataType[]) => {
+    let options: { label: string; value: number }[] = []
+    data.map((item) => {
+      options.push({
+        value: item.id,
+        label: item.name,
+      })
+    })
+    return options
+  }
+
   return (
     <>
       {contextHolder}
       <Form form={form} labelCol={{ span: 4 }} wrapperCol={{ span: 14 }} layout="horizontal">
+        <Form.Item
+          {...formItemLayout}
+          name="league_id"
+          label="联赛"
+          rules={[
+            {
+              required: true,
+              message: '请选择一个联赛',
+            },
+          ]}>
+          <Select
+            showSearch
+            placeholder="Select a league"
+            optionFilterProp="children"
+            onChange={onChange}
+            onSearch={onSearch}
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={options(leagueData)}
+          />
+        </Form.Item>
         <Form.Item
           {...formItemLayout}
           name="name"
@@ -143,7 +216,7 @@ function Team() {
           </Button>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table columns={columns} dataSource={data} />
     </>
   )
 }

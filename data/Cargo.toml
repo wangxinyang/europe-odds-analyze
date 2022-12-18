@@ -12,3 +12,4 @@ thiserror = "1.0.37"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9.14"
+bigdecimal = { version = "0.3", features = ["serde"] }

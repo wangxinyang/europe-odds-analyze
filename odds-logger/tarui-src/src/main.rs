@@ -6,10 +6,11 @@
 // use tokio::sync::mpsc;
 
 use app::{
-    __cmd__delete_book_maker_info, __cmd__delete_league_info, __cmd__get_book_maker_lists,
-    __cmd__get_league_lists, __cmd__save_book_maker_info, __cmd__save_league_info,
-    delete_book_maker_info, delete_league_info, get_book_maker_lists, get_league_lists,
-    save_book_maker_info, save_league_info,
+    __cmd__delete_book_maker_info, __cmd__delete_league_info, __cmd__delete_team_info,
+    __cmd__get_book_maker_lists, __cmd__get_league_lists, __cmd__get_team_lists,
+    __cmd__save_book_maker_info, __cmd__save_league_info, __cmd__save_team_info,
+    delete_book_maker_info, delete_league_info, delete_team_info, get_book_maker_lists,
+    get_league_lists, get_team_lists, save_book_maker_info, save_league_info, save_team_info,
 };
 use tauri::async_runtime::block_on;
 use tauri::Manager;
@@ -32,6 +33,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             get_league_lists,
             save_league_info,
             delete_league_info,
+            // team
+            get_team_lists,
+            save_team_info,
+            delete_team_info,
         ])
         .setup(|app| {
             app.manage(odds_manager);
