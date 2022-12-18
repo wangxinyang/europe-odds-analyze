@@ -137,6 +137,19 @@ impl EuropeOdds for OddsManager {
         Ok(teams)
     }
 
+    /// query team data by league id
+    async fn query_teams_with_league(&self, id: LeagueId) -> Result<Vec<Team>, OddsError> {
+        let teams = sqlx::query_as(
+            "SELECT teams.*, leagues.name league_name FROM euro.teams teams,
+            euro.leagues leagues where teams.league_id = leagues.id and leagues.id = $1 ORDER BY teams.created_at DESC",
+        )
+        .bind(id)
+        .fetch_all(&self.conn)
+        .await?;
+
+        Ok(teams)
+    }
+
     /// add team data to persistence
     async fn create_team(&self, mut team: Team) -> Result<Vec<Team>, OddsError> {
         let id = sqlx::query(

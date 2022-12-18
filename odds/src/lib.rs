@@ -42,6 +42,9 @@ pub trait EuropeOdds {
     /// get all team data
     async fn list_teams(&self) -> Result<Vec<Team>, OddsError>;
 
+    /// query team data by league id
+    async fn query_teams_with_league(&self, id: LeagueId) -> Result<Vec<Team>, OddsError>;
+
     /// add team data to persistence
     async fn create_team(&self, team: Team) -> Result<Vec<Team>, OddsError>;
 
