@@ -1,9 +1,9 @@
 use chrono::NaiveDateTime;
 use derive_builder::Builder;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
-#[derive(Debug, Builder, FromRow, Serialize)]
+#[derive(Debug, Builder, FromRow, Serialize, Deserialize)]
 pub struct Matches {
     #[builder(default)]
     pub id: i32,
@@ -13,12 +13,12 @@ pub struct Matches {
     pub home_team_id: i32,
     #[builder(default)]
     pub away_team_id: i32,
-    #[builder(setter(into))]
-    pub home_team: String,
-    #[builder(setter(into))]
-    pub away_team: String,
-    #[builder(setter(strip_option))]
-    pub game_time: NaiveDateTime,
+    #[builder(default, setter(into, strip_option))]
+    pub home_team: Option<String>,
+    #[builder(default, setter(into, strip_option))]
+    pub away_team: Option<String>,
+    #[builder(default, setter(strip_option))]
+    pub game_time: Option<NaiveDateTime>,
     #[builder(default, setter(into, strip_option))]
     pub game_year: Option<String>,
     #[builder(default, setter(into, strip_option))]

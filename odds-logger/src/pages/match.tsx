@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import Odds from '../components/odds'
+import { v } from '@tauri-apps/api/event-2a9960e7'
 
 function Match() {
   const formItemLayout = {
@@ -168,15 +169,53 @@ function Match() {
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
+
+      let matchInfo = {
+        league_id: values.league_id,
+        home_team_id: values.home_team_id,
+        away_team_id: values.away_team_id,
+        game_time: values.game_time,
+        game_year: values.game_year,
+        game_round: values.game_round,
+        game_result: values.game_result,
+        note: values.note,
+      }
+
+      let oddsInfos = [
+        {
+          bookmaker_id: values.bookmaker_id1,
+          home_win_start: values.home_win_start1,
+          home_win_end: values.home_win_end1,
+          draw_start: values.draw_start1,
+          draw_end: values.draw_end1,
+          away_win_start: values.away_win_start1,
+          away_win_end: values.away_win_end1,
+        },
+        {
+          bookmaker_id: values.bookmaker_id2,
+          home_win_start: values.home_win_start2,
+          home_win_end: values.home_win_end2,
+          draw_start: values.draw_start2,
+          draw_end: values.draw_end2,
+          away_win_start: values.away_win_start2,
+          away_win_end: values.away_win_end2,
+        },
+      ]
+
+      let a = await invoke<number>('save_match_odds', { matchInfo, oddsInfos })
+      console.log(a)
+
       // call rust async function
-      let lists = await invoke<DataType[]>('save_team_info', {
-        id: parseInt(values.league_id, 10),
-        name: values.name,
-        note: values.note == undefined ? '' : values.note,
-      })
-      render_list(lists)
+      // let lists = await invoke<DataType[]>('save_team_info', {
+      //   id: parseInt(values.league_id, 10),
+      //   name: values.name,
+      //   note: values.note == undefined ? '' : values.note,
+      // })
+      // render_list(lists)
       success(messageApi, 'Successful: 保存成功')
     } catch (errorInfo) {
+      console.log('Failed:', errorInfo)
+
       error(messageApi, 'Failed: 保存失败, 请检查数据')
     }
   }
@@ -326,10 +365,9 @@ function Match() {
               </Form.Item>
             </Col>
           </Row>
-
           <Odds formItemLayout={formItemLayout} index={1} />
           <Odds formItemLayout={formItemLayout} index={2} />
-          {/* <Row>
+          <Row>
             <Col span={12}>
               <Form.Item {...formTailLayout}>
                 <Button type="primary" onClick={handleSearchInfo}>
@@ -340,7 +378,7 @@ function Match() {
                 </Button>
               </Form.Item>
             </Col>
-          </Row> */}
+          </Row>
         </Form>
         {/* <Table columns={columns} dataSource={data} /> */}
       </>
