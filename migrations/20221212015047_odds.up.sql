@@ -43,6 +43,8 @@ CREATE TABLE euro.matches (
     away_team_id SERIAL NOT NULL,
     away_team VARCHAR(15) NOT NULL,
     game_time TIMESTAMP NOT NULL,
+    game_year VARCHAR(5) DEFAULT NULL,
+    game_round VARCHAR(5) DEFAULT NULL,
     game_result VARCHAR(5) DEFAULT NULL,
     note VARCHAR(100) DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),

@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
-import { DefaultOptionType } from 'antd/es/select'
+import Odds from '../components/odds'
 
-function Odds() {
+function Match() {
   const formItemLayout = {
     labelCol: { span: 4 },
     wrapperCol: { span: 16 },
@@ -74,13 +74,19 @@ function Odds() {
     },
   ]
 
+  // form
   const [form] = Form.useForm()
+  // league list data
   const [leagueData, setLeagueData] = useState<LeagueDataType[]>([])
+  // team list data
   const [teamDataWithLeague, setTeamDataWithLeague] = useState<{ label: string; value: number }[]>(
     []
   )
+  // selected league data
   const [selectedLeagueData, setSelectedLeaueData] = useState<number>(0)
+  // TODO: not coding
   const [data, setData] = useState<DataType[]>([])
+  // message info
   const [messageApi, contextHolder] = message.useMessage()
 
   // render league list data in page
@@ -232,10 +238,22 @@ function Odds() {
                 <Select
                   defaultValue={selectedLeagueData}
                   value={selectedLeagueData}
-                  placeholder="Select a league"
+                  placeholder="选择一个联赛"
                   onChange={handleLeagueChange}
                   options={selectLeagueDataOption(leagueData)}
                 />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item {...formItemLayout} name="game_year" label="赛季">
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={12}>
+              <Form.Item {...formItemLayout} name="game_round" label="轮次">
+                <Input />
               </Form.Item>
             </Col>
           </Row>
@@ -253,7 +271,7 @@ function Odds() {
                 ]}>
                 <Select
                   showSearch
-                  placeholder="Select a team"
+                  placeholder="选择球队"
                   optionFilterProp="children"
                   onChange={onSecondCityChange}
                   options={teamDataWithLeague}
@@ -273,7 +291,7 @@ function Odds() {
                 ]}>
                 <Select
                   showSearch
-                  placeholder="Select a team"
+                  placeholder="选择球队"
                   optionFilterProp="children"
                   onChange={onSecondCityChange}
                   options={teamDataWithLeague}
@@ -285,7 +303,7 @@ function Odds() {
             <Col span={12}>
               <Form.Item {...formItemLayout} name="game_result" label="比赛结果">
                 <Select
-                  placeholder="Select a result"
+                  placeholder="选择比赛结果"
                   onChange={onSecondCityChange}
                   options={[
                     { value: '3', label: '主胜' },
@@ -297,7 +315,7 @@ function Odds() {
             </Col>
             <Col span={12}>
               <Form.Item name="game_time" label="比赛时间">
-                <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+                <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="选择比赛时间" />
               </Form.Item>
             </Col>
           </Row>
@@ -308,7 +326,10 @@ function Odds() {
               </Form.Item>
             </Col>
           </Row>
-          <Row>
+
+          <Odds formItemLayout={formItemLayout} index={1} />
+          <Odds formItemLayout={formItemLayout} index={2} />
+          {/* <Row>
             <Col span={12}>
               <Form.Item {...formTailLayout}>
                 <Button type="primary" onClick={handleSearchInfo}>
@@ -319,7 +340,7 @@ function Odds() {
                 </Button>
               </Form.Item>
             </Col>
-          </Row>
+          </Row> */}
         </Form>
         {/* <Table columns={columns} dataSource={data} /> */}
       </>
@@ -327,4 +348,4 @@ function Odds() {
   }
 }
 
-export default Odds
+export default Match

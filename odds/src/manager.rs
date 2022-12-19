@@ -204,7 +204,8 @@ impl EuropeOdds for OddsManager {
         // insert matches table
         let id: i32 = sqlx::query(
             "INSERT INTO euro.matches (league_id, home_team_id, home_team, away_team_id,
-                away_team, game_time, game_result, note)  VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+                away_team, game_time, game_year, game_round, game_result, note)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id",
         )
         .bind(matches.league_id)
         .bind(matches.home_team_id)
@@ -212,6 +213,8 @@ impl EuropeOdds for OddsManager {
         .bind(matches.away_team_id)
         .bind(&matches.away_team)
         .bind(matches.game_time)
+        .bind(&matches.game_year)
+        .bind(&matches.game_round)
         .bind(&matches.game_result)
         .bind(&matches.note)
         .fetch_one(&self.conn)
@@ -254,7 +257,8 @@ impl EuropeOdds for OddsManager {
         // update matches table
         let updated_matches = sqlx::query_as::<_, Matches>(
             "UPDATE euro.matches SET league_id = $1, home_team_id = $2, home_team = $3, away_team_id = $4,
-                away_team = $5, game_time = $6, game_result = $7, note = $8 WHERE id = $9 RETURNING *",
+                away_team = $5, game_time = $6, game_result = $7, note = $8, game_year = $9,
+                game_round = $10 WHERE id = $11 RETURNING *",
         )
         .bind(matches.league_id)
         .bind(matches.home_team_id)
@@ -264,6 +268,8 @@ impl EuropeOdds for OddsManager {
         .bind(matches.game_time)
         .bind(&matches.game_result)
         .bind(&matches.note)
+        .bind(&matches.game_year)
+        .bind(&matches.game_round)
         .bind(matches.id)
         .fetch_one(&self.conn)
         .await?;
@@ -514,6 +520,8 @@ mod tests {
             .away_team("利物浦")
             .game_time(NaiveDateTime::default())
             .game_result("2:1")
+            .game_round("1")
+            .game_year("2022")
             .build()
             .unwrap();
         let odd_1 = OddsBuilder::default()
