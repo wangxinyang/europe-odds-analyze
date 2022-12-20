@@ -1,6 +1,8 @@
+use serde::Serialize;
+
 use crate::{Matches, Odds};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct MatchInfo {
     pub matches: Matches,
     pub odds: Vec<Odds>,

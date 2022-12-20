@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import Odds from '../components/odds'
-import { v } from '@tauri-apps/api/event-2a9960e7'
+import * as moment from 'moment'
 
 function Match() {
   const formItemLayout = {
@@ -169,12 +169,17 @@ function Match() {
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
-
+      console.log('Received values of form: ', values)
+      let game_time = moment(values.game_time).format('YYYY-MM-DD HH:mm:ss')
+      console.log('game_time: ', game_time)
+      console.log('game_time: ', moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
       let matchInfo = {
         league_id: values.league_id,
-        home_team_id: values.home_team_id,
-        away_team_id: values.away_team_id,
-        game_time: values.game_time,
+        home_team_id: values.home_team.value,
+        away_team_id: values.away_team.value,
+        home_team_name: values.home_team.label,
+        away_team_name: values.away_team.label,
+        game_time,
         game_year: values.game_year,
         game_round: values.game_round,
         game_result: values.game_result,
@@ -300,7 +305,7 @@ function Match() {
             <Col span={12}>
               <Form.Item
                 {...formItemLayout}
-                name="home_team_id"
+                name="home_team"
                 label="主队"
                 rules={[
                   {
@@ -309,7 +314,7 @@ function Match() {
                   },
                 ]}>
                 <Select
-                  showSearch
+                  labelInValue={true}
                   placeholder="选择球队"
                   optionFilterProp="children"
                   onChange={onSecondCityChange}
@@ -320,7 +325,7 @@ function Match() {
             <Col span={12}>
               <Form.Item
                 {...formItemLayout}
-                name="away_team_id"
+                name="away_team"
                 label="客队"
                 rules={[
                   {
@@ -329,7 +334,7 @@ function Match() {
                   },
                 ]}>
                 <Select
-                  showSearch
+                  labelInValue={true}
                   placeholder="选择球队"
                   optionFilterProp="children"
                   onChange={onSecondCityChange}
