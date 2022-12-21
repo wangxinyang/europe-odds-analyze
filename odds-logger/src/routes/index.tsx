@@ -1,6 +1,7 @@
 import { lazy, ReactNode, Suspense } from 'react'
 import { RouteObject } from 'react-router-dom'
 import AppLayout from '../components/app_layout'
+import MatchList from '../pages/match_list'
 // lazy initialization
 const BookMaker = lazy(() => import('../pages/bookmaker'))
 const League = lazy(() => import('../pages/league'))
@@ -29,8 +30,12 @@ export const routes: RouteObject[] = [
         element: lazyLoad(<Team />),
       },
       {
-        path: '/odds',
+        path: '/add_match_info',
         element: lazyLoad(<Match />),
+      },
+      {
+        path: '/match_list',
+        element: lazyLoad(<MatchList />),
       },
     ],
   },

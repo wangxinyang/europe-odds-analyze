@@ -182,7 +182,7 @@ function Team() {
           ]}>
           <Select
             showSearch
-            placeholder="Select a league"
+            placeholder="选择联赛"
             optionFilterProp="children"
             onChange={onChange}
             onSearch={onSearch}

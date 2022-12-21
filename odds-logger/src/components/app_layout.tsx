@@ -1,5 +1,11 @@
 import { Layout, Menu, Breadcrumb } from 'antd'
-import { LoginOutlined } from '@ant-design/icons'
+import {
+  LoginOutlined,
+  BarChartOutlined,
+  TagsOutlined,
+  ToolOutlined,
+  BankOutlined,
+} from '@ant-design/icons'
 import { Link, matchRoutes, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { routes } from '../routes'
@@ -39,7 +45,7 @@ function AppLayout() {
 
   return (
     <>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ height: '100vh' }}>
         <Header className="header">
           <div className="logo" />
         </Header>
@@ -51,16 +57,21 @@ function AppLayout() {
               defaultOpenKeys={defaultOpenKeys}
               style={{ height: '100%', borderRight: 0 }}>
               <SubMenu key="/" icon={<LoginOutlined />} title="赔率管理">
-                <Menu.Item key="1">
-                  <Link to="/odds">赔率记录</Link>
-                </Menu.Item>
-                <Menu.Item key="2">
+                <SubMenu key="1" icon={<BarChartOutlined />} title="比赛记录">
+                  <Menu.Item key="5">
+                    <Link to="/match_list">详情</Link>
+                  </Menu.Item>
+                  <Menu.Item key="6">
+                    <Link to="/add_match_info">新增</Link>
+                  </Menu.Item>
+                </SubMenu>
+                <Menu.Item key="2" icon={<ToolOutlined />}>
                   <Link to="/league">联赛</Link>
                 </Menu.Item>
-                <Menu.Item key="3">
+                <Menu.Item key="3" icon={<TagsOutlined />}>
                   <Link to="/team">球队</Link>
                 </Menu.Item>
-                <Menu.Item key="4">
+                <Menu.Item key="4" icon={<BankOutlined />}>
                   <Link to="/">博彩公司</Link>
                 </Menu.Item>
               </SubMenu>
