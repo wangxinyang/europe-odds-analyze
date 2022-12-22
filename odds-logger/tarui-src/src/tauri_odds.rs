@@ -17,12 +17,12 @@ pub async fn query_teams_with_league(
 #[derive(Debug, Deserialize)]
 pub struct OddsInfo {
     pub bookmaker_id: i32,
-    pub home_win_start: String,
-    pub draw_start: String,
-    pub away_win_start: String,
-    pub home_win_end: String,
-    pub draw_end: String,
-    pub away_win_end: String,
+    pub home_win_start: Option<String>,
+    pub draw_start: Option<String>,
+    pub away_win_start: Option<String>,
+    pub home_win_end: Option<String>,
+    pub draw_end: Option<String>,
+    pub away_win_end: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,10 +33,10 @@ pub struct MatchOddsInfo {
     pub away_team_id: i32,
     pub away_team_name: String,
     pub game_time: String,
-    pub game_year: String,
-    pub game_round: String,
-    pub game_result: String,
-    pub note: String,
+    pub game_year: Option<String>,
+    pub game_round: Option<String>,
+    pub game_result: Option<String>,
+    pub note: Option<String>,
 }
 
 // Result<Vec<MatchInfo>, OddsError>
@@ -57,10 +57,10 @@ pub async fn save_match_odds(
             NaiveDateTime::parse_from_str(match_info.game_time.as_str(), "%Y-%m-%d %H:%M:%S")
                 .unwrap(),
         )
-        .game_year(match_info.game_year)
-        .game_round(match_info.game_round)
-        .game_result(match_info.game_result)
-        .note(match_info.note)
+        .game_year(match_info.game_year.unwrap_or_default())
+        .game_round(match_info.game_round.unwrap_or_default())
+        .game_result(match_info.game_result.unwrap_or_default())
+        .note(match_info.note.unwrap_or_default())
         .build()
         .unwrap();
     let odds_infos: Vec<Odds> = odds_infos
@@ -68,12 +68,42 @@ pub async fn save_match_odds(
         .map(|info| {
             OddsBuilder::default()
                 .bookmaker_id(info.bookmaker_id)
-                .home_win_start_setter(info.home_win_start.as_str())
-                .draw_start_setter(info.draw_start.as_str())
-                .away_win_start_setter(info.away_win_start.as_str())
-                .home_win_end_setter(info.home_win_end.as_str())
-                .draw_end_setter(info.draw_end.as_str())
-                .away_win_end_setter(info.away_win_end.as_str())
+                .home_win_start_setter(
+                    info.home_win_start
+                        .clone()
+                        .unwrap_or_else(|| "0.00".to_string())
+                        .as_str(),
+                )
+                .draw_start_setter(
+                    info.draw_start
+                        .clone()
+                        .unwrap_or_else(|| "0.00".to_string())
+                        .as_str(),
+                )
+                .away_win_start_setter(
+                    info.away_win_start
+                        .clone()
+                        .unwrap_or_else(|| "0.00".to_string())
+                        .as_str(),
+                )
+                .home_win_end_setter(
+                    info.home_win_end
+                        .clone()
+                        .unwrap_or_else(|| "0.00".to_string())
+                        .as_str(),
+                )
+                .draw_end_setter(
+                    info.draw_end
+                        .clone()
+                        .unwrap_or_else(|| "0.00".to_string())
+                        .as_str(),
+                )
+                .away_win_end_setter(
+                    info.away_win_end
+                        .clone()
+                        .unwrap_or_else(|| "0.00".to_string())
+                        .as_str(),
+                )
                 .build()
                 .unwrap()
         })

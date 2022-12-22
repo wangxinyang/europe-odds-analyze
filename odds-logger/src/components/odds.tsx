@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api'
 import { Col, Form, Input, Row, Select } from 'antd'
 import { useEffect, useState } from 'react'
+import { BasicDataType, SelectType } from '../types/data'
 
 interface IformItemLayout {
   labelCol: { span: number }
@@ -17,11 +18,6 @@ type Bookmaker = {
   name: string
 }
 
-type BookmakerSelect = {
-  label: string
-  value: number
-}
-
 // const formButtonLayout = {
 //   labelCol: { span: 4 },
 //   wrapperCol: { span: 8, offset: 4 },
@@ -33,12 +29,12 @@ const formTailLayout = {
 }
 
 function Odds({ formItemLayout, index }: FormItemLayoutProps) {
-  const [bookmakers, setBokkmakers] = useState<BookmakerSelect[]>([])
+  const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
 
   useEffect(() => {
     const get_book_maker_list = async () => {
-      let selectBookMakers: BookmakerSelect[] = []
-      let bookMakers = await invoke<Bookmaker[]>('get_book_maker_lists')
+      let selectBookMakers: SelectType[] = []
+      let bookMakers = await invoke<BasicDataType[]>('get_book_maker_lists')
       bookMakers.map((item) => {
         selectBookMakers.push({ label: item.name, value: item.id })
       })

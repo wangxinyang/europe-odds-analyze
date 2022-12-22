@@ -5,6 +5,8 @@ import {
   TagsOutlined,
   ToolOutlined,
   BankOutlined,
+  OrderedListOutlined,
+  PlusOutlined,
 } from '@ant-design/icons'
 import { Link, matchRoutes, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -34,8 +36,6 @@ function AppLayout() {
     }
     setDefaultSelectedKeys(pathArr)
     setDefaultOpenKeys(pathArr)
-    console.log(pathArr)
-
     setIsInit(true)
   }, [location.pathname])
 
@@ -45,7 +45,7 @@ function AppLayout() {
 
   return (
     <>
-      <Layout style={{ height: '100vh' }}>
+      <Layout style={{ minHeight: '100vh' }}>
         <Header className="header">
           <div className="logo" />
         </Header>
@@ -58,10 +58,10 @@ function AppLayout() {
               style={{ height: '100%', borderRight: 0 }}>
               <SubMenu key="/" icon={<LoginOutlined />} title="赔率管理">
                 <SubMenu key="1" icon={<BarChartOutlined />} title="比赛记录">
-                  <Menu.Item key="5">
+                  <Menu.Item key="5" icon={<OrderedListOutlined />}>
                     <Link to="/match_list">详情</Link>
                   </Menu.Item>
-                  <Menu.Item key="6">
+                  <Menu.Item key="6" icon={<PlusOutlined />}>
                     <Link to="/add_match_info">新增</Link>
                   </Menu.Item>
                 </SubMenu>
