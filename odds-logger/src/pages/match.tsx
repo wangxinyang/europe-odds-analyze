@@ -12,11 +12,6 @@ function Match() {
       <MatchInfo is_add={true} messageApi={messageApi} />
     </>
   )
-  // if (!leagueData[0]) {
-  //   return <div>loading...</div>
-  // } else {
-
-  // }
 }
 
 export default Match

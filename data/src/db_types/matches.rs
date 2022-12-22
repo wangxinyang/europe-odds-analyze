@@ -3,7 +3,7 @@ use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
-#[derive(Debug, Builder, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, Builder, FromRow, Serialize, Deserialize)]
 pub struct Matches {
     #[builder(default)]
     pub id: i32,

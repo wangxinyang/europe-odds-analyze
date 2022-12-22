@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api'
 import { message, Popconfirm } from 'antd'
 import Table, { ColumnsType } from 'antd/es/table'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import MatchInfo from '../components/match_info'
 import { error, success } from '../utils'
 
@@ -26,12 +26,12 @@ function MatchQuery() {
       render: (text) => <a>{text}</a>,
     },
     {
-      title: '联赛',
+      title: '联赛名',
       dataIndex: 'league_name',
       key: 'league_name',
     },
     {
-      title: '球队名',
+      title: '比赛',
       dataIndex: 'name',
       key: 'name',
     },

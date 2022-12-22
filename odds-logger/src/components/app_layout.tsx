@@ -59,7 +59,7 @@ function AppLayout() {
               <SubMenu key="/" icon={<LoginOutlined />} title="赔率管理">
                 <SubMenu key="1" icon={<BarChartOutlined />} title="比赛记录">
                   <Menu.Item key="5" icon={<OrderedListOutlined />}>
-                    <Link to="/match_list">详情</Link>
+                    <Link to="/match_list">查询</Link>
                   </Menu.Item>
                   <Menu.Item key="6" icon={<PlusOutlined />}>
                     <Link to="/add_match_info">新增</Link>
