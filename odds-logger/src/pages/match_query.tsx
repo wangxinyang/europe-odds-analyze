@@ -16,7 +16,7 @@ interface DataType {
 
 function MatchQuery() {
   const [messageApi, contextHolder] = message.useMessage()
-  const [data, setData] = useState<DataType[]>([])
+  const [tableData, setTableData] = useState<DataType[]>([])
 
   const columns: ColumnsType<DataType> = [
     {
@@ -67,18 +67,20 @@ function MatchQuery() {
   // render team list data in page
   const render_list = (lists: DataType[]) => {
     // clear data
-    setData([])
+    // setData([])
     lists.map((item, index) => {
       let data = { ...item, key: index.toString(), index: index + 1 }
-      setData((prev) => [...prev, data])
+      // setData((prev) => [...prev, data])
     })
   }
+
+  const getMatchInfoTableData = (data: any) => {}
 
   return (
     <>
       {contextHolder}
-      <MatchInfo is_add={false} messageApi={messageApi} />
-      <Table columns={columns} dataSource={data} />
+      <MatchInfo is_add={false} messageApi={messageApi} handleValue={getMatchInfoTableData} />
+      <Table columns={columns} dataSource={tableData} />
     </>
   )
 }

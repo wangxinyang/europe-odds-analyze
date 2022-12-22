@@ -20,9 +20,10 @@ const formTailLayout = {
 type MatchInfoProps = {
   is_add: boolean
   messageApi: MessageInstance
+  handleValue: Function
 }
 
-function MatchInfo({ is_add, messageApi }: MatchInfoProps) {
+function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   // form
   const [form] = Form.useForm()
   // league list data
@@ -99,6 +100,8 @@ function MatchInfo({ is_add, messageApi }: MatchInfoProps) {
       error(messageApi, 'Failed: 查询失败, 请检查数据')
     }
   }
+
+  const handleQueryInfo = async () => {}
 
   // handle bookmaker save
   const handleSaveInfo = async () => {
@@ -289,7 +292,7 @@ function MatchInfo({ is_add, messageApi }: MatchInfoProps) {
                   保存
                 </Button>
               ) : (
-                <Button type="primary" onClick={handleSaveInfo}>
+                <Button type="primary" onClick={handleQueryInfo}>
                   查询
                 </Button>
               )}

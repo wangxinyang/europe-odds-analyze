@@ -1,18 +1,8 @@
 use chrono::NaiveDateTime;
-use data::{MatchInfo, MatchesBuilder, Odds, OddsBuilder, OddsError, Team};
+use data::{MatchInfo, MatchInfoQuery, MatchesBuilder, Odds, OddsBuilder, OddsError, Team};
 use odds::{EuropeOdds, OddsManager};
 use serde::Deserialize;
 use tauri::State;
-
-#[tauri::command]
-pub async fn query_teams_with_league(
-    manager: State<'_, OddsManager>,
-    id: i32,
-) -> Result<Vec<Team>, OddsError> {
-    let manager = &*manager;
-    let teams = manager.query_teams_with_league(id).await?;
-    Ok(teams)
-}
 
 #[derive(Debug, Deserialize)]
 pub struct OddsInfo {
@@ -37,6 +27,16 @@ pub struct MatchOddsInfo {
     pub game_round: Option<String>,
     pub game_result: Option<String>,
     pub note: Option<String>,
+}
+
+#[tauri::command]
+pub async fn query_teams_with_league(
+    manager: State<'_, OddsManager>,
+    id: i32,
+) -> Result<Vec<Team>, OddsError> {
+    let manager = &*manager;
+    let teams = manager.query_teams_with_league(id).await?;
+    Ok(teams)
 }
 
 // Result<Vec<MatchInfo>, OddsError>
@@ -110,4 +110,14 @@ pub async fn save_match_odds(
         .collect();
     let info = manager.create_match_info(m_info, odds_infos).await?;
     Ok(info)
+}
+
+#[tauri::command]
+pub async fn query_match_info(
+    manager: State<'_, OddsManager>,
+    query: MatchInfoQuery,
+) -> Result<MatchInfo, OddsError> {
+    let manager = &*manager;
+    let match_info = manager.query_match_info(query).await?;
+    Ok(match_info)
 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Matches, Odds};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MatchInfoQuery {
     pub book_maker_id: i32,
     pub match_id: i32,
