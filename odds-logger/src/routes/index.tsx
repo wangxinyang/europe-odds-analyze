@@ -19,23 +19,23 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: lazyLoad(<BookMaker />),
-      },
-      {
-        path: '/league',
-        element: lazyLoad(<League />),
-      },
-      {
-        path: '/team',
-        element: lazyLoad(<Team />),
+        element: lazyLoad(<MatchQuery />),
       },
       {
         path: '/add_match_info',
         element: lazyLoad(<Match />),
       },
       {
-        path: '/match_list',
-        element: lazyLoad(<MatchQuery />),
+        path: '/league',
+        element: lazyLoad(<League />),
+      },
+      {
+        path: '/bookmaker',
+        element: lazyLoad(<BookMaker />),
+      },
+      {
+        path: '/team',
+        element: lazyLoad(<Team />),
       },
     ],
   },

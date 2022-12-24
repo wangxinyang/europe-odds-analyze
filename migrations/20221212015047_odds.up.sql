@@ -38,6 +38,7 @@ CREATE INDEX teams_league_id_idx ON euro.teams (league_id);
 CREATE TABLE euro.matches (
     id SERIAL NOT NULL,
     league_id SERIAL NOT NULL,
+    league_name  VARCHAR(30) NOT NULL,
     home_team_id SERIAL NOT NULL,
     home_team VARCHAR(15) NOT NULL,
     away_team_id SERIAL NOT NULL,

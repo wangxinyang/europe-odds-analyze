@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { invoke } from '@tauri-apps/api'
-import { message, Popconfirm } from 'antd'
+import { message, Popconfirm, Space } from 'antd'
 import Table, { ColumnsType } from 'antd/es/table'
-import MatchInfo from '../components/match_info'
-import { DataType } from '../types/data'
+import { DataType, MatchInfoDataType, MatchInfoTableType } from '../types/data'
 import { error, success } from '../utils'
+import MatchInfo from '../components/match_info'
 
 function MatchQuery() {
   const [messageApi, contextHolder] = message.useMessage()
-  const [tableData, setTableData] = useState<DataType[]>([])
+  const [tableData, setTableData] = useState<MatchInfoTableType[]>([])
 
-  const columns: ColumnsType<DataType> = [
+  const columns: ColumnsType<MatchInfoTableType> = [
     {
       title: 'ID',
       dataIndex: 'index',
@@ -23,14 +23,38 @@ function MatchQuery() {
       key: 'league_name',
     },
     {
+      title: '赛季',
+      dataIndex: 'year',
+      key: 'year',
+    },
+    {
+      title: '轮次',
+      dataIndex: 'round',
+      key: 'round',
+    },
+    {
       title: '比赛对阵',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'vs',
+      key: 'vs',
     },
     {
       title: '结果',
       dataIndex: 'result',
       key: 'result',
+      render: (result) => {
+        if (result === '3') {
+          return '主胜'
+        } else if (result === '1') {
+          return '平局'
+        } else {
+          return '主负'
+        }
+      },
+    },
+    {
+      title: '比赛时间',
+      dataIndex: 'time',
+      key: 'time',
     },
     {
       title: '备注',
@@ -42,24 +66,26 @@ function MatchQuery() {
       key: 'action',
       render: (_, record, _index) => {
         return (
-          <>
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
+          <Space size={8}>
+            <Popconfirm title="Sure to open?" onConfirm={() => handleDetail(record)}>
               <a>详情</a>
             </Popconfirm>
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
               <a>删除</a>
             </Popconfirm>
-          </>
+          </Space>
         )
       },
     },
   ]
 
-  const handleDelete = async (record: DataType) => {
+  const handleDetail = async (record: MatchInfoTableType) => {}
+
+  const handleDelete = async (record: MatchInfoTableType) => {
     try {
       let { id } = record
-      let lists = await invoke<DataType[]>('delete_team_info', { id })
-      //   render_list(lists)
+      render_list(id)
+      await invoke<DataType[]>('delete_match_info', { id })
       success(messageApi, 'Successful: 删除成功')
     } catch (errorInfo) {
       error(messageApi, 'Failed: 删除失败, 请检查数据')
@@ -67,27 +93,26 @@ function MatchQuery() {
   }
 
   // render team list data in page
-  const render_list = (lists: DataType[]) => {
-    // clear data
-    // setData([])
-    lists.map((item, index) => {
-      let data = { ...item, key: index.toString(), index: index + 1 }
-      // setData((prev) => [...prev, data])
-    })
+  const render_list = (id: number) => {
+    let new_data = tableData.filter((item) => item.id !== id)
+    setTableData(new_data)
   }
 
-  const getMatchInfoTableData = (data: DataType[]) => {
-    console.log('data is:', data)
-    let result: DataType[] = []
+  // init the table info list data
+  const getMatchInfoTableData = (data: MatchInfoDataType[]) => {
+    let result: MatchInfoTableType[] = []
     data.map((item, index) => {
       result.push({
-        key: '1',
-        id: 1,
-        name: 'ghaha',
-        index: 1,
-        league_name: 'test1',
-        result: 'sl',
-        note: 'hello',
+        key: item.id.toString(),
+        id: item.id,
+        index: index + 1,
+        league_name: item.league_name,
+        vs: item.home_team + ' vs ' + item.away_team,
+        year: item.game_year,
+        round: item.game_round,
+        result: item.game_result,
+        time: item.game_time,
+        note: item.note,
       })
     })
     setTableData(result)

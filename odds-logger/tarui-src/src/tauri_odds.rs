@@ -20,6 +20,7 @@ pub struct OddsInfo {
 #[derive(Debug, Deserialize)]
 pub struct MatchOddsInfo {
     pub league_id: i32,
+    pub league_name: String,
     pub home_team_id: i32,
     pub home_team_name: String,
     pub away_team_id: i32,
@@ -28,6 +29,7 @@ pub struct MatchOddsInfo {
     pub game_year: Option<String>,
     pub game_round: Option<String>,
     pub game_result: Option<String>,
+    pub history_note: Option<String>,
     pub note: Option<String>,
 }
 
@@ -51,6 +53,7 @@ pub async fn save_match_odds(
     let manager = &*manager;
     let m_info = MatchesBuilder::default()
         .league_id(match_info.league_id)
+        .league_name(match_info.league_name)
         .home_team_id(match_info.home_team_id)
         .away_team_id(match_info.away_team_id)
         .home_team(match_info.home_team_name)
@@ -62,6 +65,7 @@ pub async fn save_match_odds(
         .game_year(match_info.game_year.unwrap_or_default())
         .game_round(match_info.game_round.unwrap_or_default())
         .game_result(match_info.game_result.unwrap_or_default())
+        .history_note(match_info.history_note.unwrap_or_default())
         .note(match_info.note.unwrap_or_default())
         .build()
         .unwrap();
@@ -119,9 +123,15 @@ pub async fn query_match_info(
     manager: State<'_, OddsManager>,
     query: MatchInfoQuery,
 ) -> Result<Vec<Matches>, OddsError> {
-    println!("query is: {:?}", query);
     let manager = &*manager;
     let match_info = manager.query_match_info(query).await?;
-    println!("match_info is: {:?}", match_info);
     Ok(match_info)
+}
+
+#[tauri::command]
+pub async fn delete_match_info(manager: State<'_, OddsManager>, id: i32) -> Result<i32, OddsError> {
+    let manager = &*manager;
+    let count = manager.delete_match_info(id).await?;
+    println!("delete info count is: {:?}", count);
+    Ok(count)
 }

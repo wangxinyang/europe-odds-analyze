@@ -34,6 +34,8 @@ function AppLayout() {
         }
       })
     }
+    console.log(pathArr)
+
     setDefaultSelectedKeys(pathArr)
     setDefaultOpenKeys(pathArr)
     setIsInit(true)
@@ -59,7 +61,7 @@ function AppLayout() {
               <SubMenu key="/" icon={<LoginOutlined />} title="赔率管理">
                 <SubMenu key="1" icon={<BarChartOutlined />} title="比赛记录">
                   <Menu.Item key="5" icon={<OrderedListOutlined />}>
-                    <Link to="/match_list">查询</Link>
+                    <Link to="/">查询</Link>
                   </Menu.Item>
                   <Menu.Item key="6" icon={<PlusOutlined />}>
                     <Link to="/add_match_info">新增</Link>
@@ -72,7 +74,7 @@ function AppLayout() {
                   <Link to="/team">球队</Link>
                 </Menu.Item>
                 <Menu.Item key="4" icon={<BankOutlined />}>
-                  <Link to="/">博彩公司</Link>
+                  <Link to="/bookmaker">博彩公司</Link>
                 </Menu.Item>
               </SubMenu>
             </Menu>

@@ -9,6 +9,8 @@ pub struct Matches {
     pub id: i32,
     #[builder(default)]
     pub league_id: i32,
+    #[builder(default, setter(into, strip_option))]
+    pub league_name: Option<String>,
     #[builder(default)]
     pub home_team_id: i32,
     #[builder(default)]
@@ -25,6 +27,8 @@ pub struct Matches {
     pub game_round: Option<String>,
     #[builder(default, setter(into, strip_option))]
     pub game_result: Option<String>,
+    #[builder(default, setter(into, strip_option))]
+    pub history_note: Option<String>,
     #[builder(default, setter(into, strip_option))]
     pub note: Option<String>,
     #[builder(default)]

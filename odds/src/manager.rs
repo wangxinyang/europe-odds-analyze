@@ -205,11 +205,12 @@ impl EuropeOdds for OddsManager {
     ) -> Result<MatchInfo, OddsError> {
         // insert matches table
         let id: i32 = sqlx::query(
-            "INSERT INTO euro.matches (league_id, home_team_id, home_team, away_team_id,
-                away_team, game_time, game_year, game_round, game_result, note)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id",
+            "INSERT INTO euro.matches (league_id, league_name, home_team_id, home_team, away_team_id,
+                away_team, game_time, game_year, game_round, game_result, history_note, note)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
         )
         .bind(matches.league_id)
+        .bind(&matches.league_name)
         .bind(matches.home_team_id)
         .bind(&matches.home_team)
         .bind(matches.away_team_id)
@@ -218,6 +219,7 @@ impl EuropeOdds for OddsManager {
         .bind(&matches.game_year)
         .bind(&matches.game_round)
         .bind(&matches.game_result)
+        .bind(&matches.history_note)
         .bind(&matches.note)
         .fetch_one(&self.conn)
         .await?
@@ -534,6 +536,7 @@ mod tests {
         let odds_manager = OddsManager::new(config.tps.get_pool().await);
         let matches = MatchesBuilder::default()
             .league_id(1)
+            .league_name("英超")
             .home_team_id(1)
             .home_team("曼联")
             .away_team_id(2)
@@ -579,6 +582,7 @@ mod tests {
         // add match info
         let matches = MatchesBuilder::default()
             .league_id(1)
+            .league_name("英超")
             .home_team_id(1)
             .home_team("曼联")
             .away_team_id(2)
@@ -636,6 +640,7 @@ mod tests {
         // add match info
         let matches = MatchesBuilder::default()
             .league_id(1)
+            .league_name("英超")
             .home_team_id(1)
             .home_team("曼联")
             .away_team_id(2)

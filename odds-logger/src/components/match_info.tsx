@@ -1,9 +1,9 @@
-import { Button, Col, DatePicker, Form, Input, message, Row, Select } from 'antd'
+import { Button, Col, DatePicker, Form, Input, Row, Select } from 'antd'
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import { MessageInstance } from 'antd/es/message/interface'
-import { BasicDataType, DataType, SelectType } from '../types/data'
+import { DataType, MatchInfoDataType, SelectType } from '../types/data'
 import Odds from './odds'
 import * as moment from 'moment'
 
@@ -27,7 +27,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   // form
   const [form] = Form.useForm()
   // league list data
-  const [leagueData, setLeagueData] = useState<BasicDataType[]>([])
+  const [leagueData, setLeagueData] = useState<DataType[]>([])
   // selected default league data
   const [selectedLeagueIndex, setSelectedLeaueIndex] = useState<number>(0)
   // team list data
@@ -38,7 +38,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   // initial league list data
   useEffect(() => {
     const get_league_lists = async () => {
-      let lists = await invoke<BasicDataType[]>('get_league_lists')
+      let lists = await invoke<DataType[]>('get_league_lists')
       render_league_list(lists)
     }
     get_league_lists()
@@ -49,7 +49,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
     let options: { label: string; value: number }[] = []
     const get_team_lists_with_league = async () => {
       try {
-        let teams = await invoke<BasicDataType[]>('query_teams_with_league', {
+        let teams = await invoke<DataType[]>('query_teams_with_league', {
           id: selectedLeagueIndex,
         })
 
@@ -72,7 +72,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   useEffect(() => {
     const get_book_maker_list = async () => {
       let selectBookMakers: SelectType[] = []
-      let bookMakers = await invoke<BasicDataType[]>('get_book_maker_lists')
+      let bookMakers = await invoke<DataType[]>('get_book_maker_lists')
       bookMakers.map((item) => {
         selectBookMakers.push({ label: item.name, value: item.id })
       })
@@ -81,8 +81,11 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
     get_book_maker_list()
   }, [])
 
+  // query match info data with query mode
   useEffect(() => {
-    get_match_infos()
+    if (!is_add) {
+      get_match_infos()
+    }
   }, [])
 
   // query match infos
@@ -92,7 +95,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
 
     let query = {
       book_maker_id: values.bookmaker_id ? values.bookmaker_id : 0,
-      league_id: values.league_id ? values.league_id : 0,
+      league_id: values.leagueInfo ? values.leagueInfo.value : 0,
       team_id: values.home_team ? values.home_team : 0,
       game_year: values.game_year,
       game_round: values.game_round,
@@ -101,8 +104,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
       page_size: 10,
     }
     try {
-      let matchInfos = await invoke<DataType[]>('query_match_info', { query })
-      console.log('matchInfos is ', matchInfos)
+      let matchInfos = await invoke<MatchInfoDataType[]>('query_match_info', { query })
       handleValue!(matchInfos)
     } catch (err) {
       console.log('err is', err)
@@ -111,7 +113,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   }
 
   // render league list data in page
-  const render_league_list = (lists: BasicDataType[]) => {
+  const render_league_list = (lists: DataType[]) => {
     lists.map((item, index) => {
       let data = { ...item, key: index.toString() }
       if (data) {
@@ -119,18 +121,6 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
       }
     })
   }
-
-  // query bookmaker list
-  const handleSearchInfo = async () => {
-    try {
-      let lists = await invoke<BasicDataType[]>('get_team_lists')
-      //    render_list(lists)
-    } catch (errorInfo) {
-      error(messageApi, 'Failed: 查询失败, 请检查数据')
-    }
-  }
-
-  const handleQueryInfo = async () => {}
 
   // handle bookmaker save
   const handleSaveInfo = async () => {
@@ -141,7 +131,8 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
       console.log('game_time: ', game_time)
       console.log('game_time: ', moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
       let matchInfo = {
-        league_id: values.league_id,
+        league_id: values.leagueInfo.value,
+        league_name: values.leagueInfo.label,
         home_team_id: values.home_team.value,
         away_team_id: values.away_team.value,
         home_team_name: values.home_team.label,
@@ -188,7 +179,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   }
 
   // build league select data info
-  const selectLeagueDataOption = (data: BasicDataType[]) => {
+  const selectLeagueDataOption = (data: DataType[]) => {
     let options: SelectType[] = []
     data.map((item) => {
       options.push({
@@ -200,8 +191,9 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   }
 
   // change the select with league
-  const handleLeagueChange = (id: number) => {
-    setSelectedLeaueIndex(id)
+  const handleLeagueChange = (league: SelectType) => {
+    let { value } = league
+    setSelectedLeaueIndex(value)
   }
 
   return (
@@ -211,7 +203,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
           <Col span={12}>
             <Form.Item
               {...formItemLayout}
-              name="league_id"
+              name="leagueInfo"
               label="联赛"
               rules={[
                 {
@@ -220,17 +212,20 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
                 },
               ]}>
               <Select
+                labelInValue={true}
                 placeholder="选择联赛"
                 onChange={handleLeagueChange}
                 options={selectLeagueDataOption(leagueData)}
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
-            <Form.Item {...formItemLayout} name="note" label="备注">
-              <Input />
-            </Form.Item>
-          </Col>
+          {is_add && (
+            <Col span={12}>
+              <Form.Item {...formItemLayout} name="history_note" label="往绩">
+                <Input />
+              </Form.Item>
+            </Col>
+          )}
         </Row>
         <Row>
           <Col span={12}>
@@ -311,6 +306,15 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
             </Col>
           )}
         </Row>
+        {is_add && (
+          <Row>
+            <Col span={12}>
+              <Form.Item {...formItemLayout} name="note" label="备注">
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+        )}
         {is_add && <Odds formItemLayout={formItemLayout} index={1} />}
         {is_add && <Odds formItemLayout={formItemLayout} index={2} />}
         <Row>
@@ -325,6 +329,9 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
                   查询
                 </Button>
               )}
+              <Button type="primary" danger onClick={() => form.resetFields()}>
+                清空
+              </Button>
             </Form.Item>
           </Col>
         </Row>
