@@ -1,18 +1,10 @@
+import { useState } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { message, Popconfirm } from 'antd'
 import Table, { ColumnsType } from 'antd/es/table'
-import { useEffect, useState } from 'react'
 import MatchInfo from '../components/match_info'
+import { DataType } from '../types/data'
 import { error, success } from '../utils'
-
-interface DataType {
-  key: string
-  id: number
-  index: number
-  legue_id: number
-  name: string
-  note: string
-}
 
 function MatchQuery() {
   const [messageApi, contextHolder] = message.useMessage()
@@ -31,9 +23,14 @@ function MatchQuery() {
       key: 'league_name',
     },
     {
-      title: '比赛',
+      title: '比赛对阵',
       dataIndex: 'name',
       key: 'name',
+    },
+    {
+      title: '结果',
+      dataIndex: 'result',
+      key: 'result',
     },
     {
       title: '备注',
@@ -45,9 +42,14 @@ function MatchQuery() {
       key: 'action',
       render: (_, record, _index) => {
         return (
-          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
-            <a>Delete</a>
-          </Popconfirm>
+          <>
+            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
+              <a>详情</a>
+            </Popconfirm>
+            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
+              <a>删除</a>
+            </Popconfirm>
+          </>
         )
       },
     },
@@ -74,7 +76,22 @@ function MatchQuery() {
     })
   }
 
-  const getMatchInfoTableData = (data: any) => {}
+  const getMatchInfoTableData = (data: DataType[]) => {
+    console.log('data is:', data)
+    let result: DataType[] = []
+    data.map((item, index) => {
+      result.push({
+        key: '1',
+        id: 1,
+        name: 'ghaha',
+        index: 1,
+        league_name: 'test1',
+        result: 'sl',
+        note: 'hello',
+      })
+    })
+    setTableData(result)
+  }
 
   return (
     <>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import { MessageInstance } from 'antd/es/message/interface'
-import { BasicDataType, SelectType } from '../types/data'
+import { BasicDataType, DataType, SelectType } from '../types/data'
 import Odds from './odds'
 import * as moment from 'moment'
 
@@ -20,7 +20,7 @@ const formTailLayout = {
 type MatchInfoProps = {
   is_add: boolean
   messageApi: MessageInstance
-  handleValue: Function
+  handleValue?: Function
 }
 
 function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
@@ -80,6 +80,35 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
     }
     get_book_maker_list()
   }, [])
+
+  useEffect(() => {
+    get_match_infos()
+  }, [])
+
+  // query match infos
+  const get_match_infos = async () => {
+    const values = await form.validateFields()
+    console.log(values)
+
+    let query = {
+      book_maker_id: values.bookmaker_id ? values.bookmaker_id : 0,
+      league_id: values.league_id ? values.league_id : 0,
+      team_id: values.home_team ? values.home_team : 0,
+      game_year: values.game_year,
+      game_round: values.game_round,
+      is_desc: true,
+      cursor: 100,
+      page_size: 10,
+    }
+    try {
+      let matchInfos = await invoke<DataType[]>('query_match_info', { query })
+      console.log('matchInfos is ', matchInfos)
+      handleValue!(matchInfos)
+    } catch (err) {
+      console.log('err is', err)
+      error(messageApi, 'Failed: 查询失败, 请检查数据')
+    }
+  }
 
   // render league list data in page
   const render_league_list = (lists: BasicDataType[]) => {
@@ -292,7 +321,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
                   保存
                 </Button>
               ) : (
-                <Button type="primary" onClick={handleQueryInfo}>
+                <Button type="primary" onClick={get_match_infos}>
                   查询
                 </Button>
               )}

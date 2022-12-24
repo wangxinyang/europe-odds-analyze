@@ -1,5 +1,7 @@
 use chrono::NaiveDateTime;
-use data::{MatchInfo, MatchInfoQuery, MatchesBuilder, Odds, OddsBuilder, OddsError, Team};
+use data::{
+    MatchInfo, MatchInfoQuery, Matches, MatchesBuilder, Odds, OddsBuilder, OddsError, Team,
+};
 use odds::{EuropeOdds, OddsManager};
 use serde::Deserialize;
 use tauri::State;
@@ -116,8 +118,10 @@ pub async fn save_match_odds(
 pub async fn query_match_info(
     manager: State<'_, OddsManager>,
     query: MatchInfoQuery,
-) -> Result<MatchInfo, OddsError> {
+) -> Result<Vec<Matches>, OddsError> {
+    println!("query is: {:?}", query);
     let manager = &*manager;
     let match_info = manager.query_match_info(query).await?;
+    println!("match_info is: {:?}", match_info);
     Ok(match_info)
 }

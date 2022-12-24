@@ -1,6 +1,5 @@
 CREATE OR REPLACE FUNCTION euro.query(
     bid INTEGER,  --bookmaker id
-    mid INTEGER,  --match id
     lid INTEGER,  --league id
     tid INTEGER,  --team id
     game_year VARCHAR,
@@ -26,25 +25,20 @@ DECLARE
         END IF;
         -- format the qurey based on parameters
         _sql := format(
-            'select matches.* from euro.matches matches, euro.odds odds
-            where matches.id == odds.id and %s and %s and %s and %s and %s order by id %s limit %L::integer',
+            'select * from euro.matches where %s and %s and %s and %s and %s order by id %s limit %L::integer',
             CASE
-                WHEN is_desc THEN 'odds.id < ' || cursor
-                ELSE 'odds.id > ' || cursor
+                WHEN is_desc THEN 'id < ' || cursor
+                ELSE 'id > ' || cursor
             END,
             CASE
-                WHEN lid IS NULL AND tid IS NULL  THEN 'TRUE'
-                WHEN lid IS NULL THEN ('matches.home_team_id = ' || quote_literal(tid)
-                                        or 'matches.away_team_id = ' || quote_literal(tid))
-                WHEN tid IS NULL THEN 'matches.league_id = ' || quote_literal(lid)
-                ELSE 'matches.league_id  =' || quote_literal(lid) || ' AND (matches.home_team_id = ' || quote_literal(tid)
-                                        or 'matches.away_team_id = ' || quote_literal(tid) || ')'
+                WHEN lid = 0 AND tid = 0  THEN 'TRUE'
+                WHEN lid = 0 THEN '(home_team_id = ' || tid  || 'or away_team_id = ' || tid || ')'
+                WHEN tid = 0 THEN 'league_id = ' || lid
+                ELSE 'league_id  =' || lid || ' AND (home_team_id = ' || tid  || 'or away_team_id = ' || tid || ')'
             END,
             CASE
-                WHEN bid IS NULL AND mid IS NULL  THEN 'TRUE'
-                WHEN bid IS NULL THEN 'odds.match_id = ' || quote_literal(mid)
-                WHEN mid IS NULL THEN 'odds.bookmaker_id = ' || quote_literal(bid)
-                ELSE 'bookmaker_id =' || quote_literal(bid) || ' AND match_id = ' || quote_literal(mid)
+                WHEN bid = 0 THEN 'TRUE'
+                ELSE 'bookmaker_id =' || bid
             END,
             CASE
                 WHEN game_year IS NULL THEN 'TRUE'

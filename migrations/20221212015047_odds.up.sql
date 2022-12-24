@@ -46,6 +46,7 @@ CREATE TABLE euro.matches (
     game_year VARCHAR(5) DEFAULT NULL,
     game_round VARCHAR(5) DEFAULT NULL,
     game_result VARCHAR(5) DEFAULT NULL,
+    history_note VARCHAR(255) DEFAULT NULL,
     note VARCHAR(100) DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -65,7 +66,7 @@ CREATE TABLE euro.odds (
     home_win_end NUMERIC(5,2) DEFAULT 0.0,
     draw_end NUMERIC(5,2) DEFAULT 0.0,
     away_win_end NUMERIC(5,2) DEFAULT 0.0,
-    note VARCHAR(50) DEFAULT 0.0,
+    note VARCHAR(50) DEFAULT NULL,
 
     CONSTRAINT odds_pkey PRIMARY KEY (id),
     CONSTRAINT odds_match_id_fkey FOREIGN KEY (match_id) REFERENCES euro.matches(id) ON DELETE CASCADE ON UPDATE CASCADE

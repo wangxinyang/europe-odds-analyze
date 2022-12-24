@@ -9,3 +9,9 @@ export type SelectType = {
   label: string
   value: number
 }
+
+export interface DataType extends BasicDataType {
+  index: number
+  league_name: string
+  result: string
+}

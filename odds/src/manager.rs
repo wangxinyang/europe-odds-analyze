@@ -313,23 +313,21 @@ impl EuropeOdds for OddsManager {
         Ok(count.rows_affected() as i32)
     }
 
-    async fn query_match_info(&self, query: MatchInfoQuery) -> Result<MatchInfo, OddsError> {
-        let match_infos = sqlx::query_as::<_, Matches>(
-            "select * from euro.query($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-        )
-        .bind(query.book_maker_id)
-        .bind(query.match_id)
-        .bind(query.league_id)
-        .bind(query.team_id)
-        .bind(query.game_year)
-        .bind(query.game_round)
-        .bind(query.cursor)
-        .bind(query.is_desc)
-        .bind(query.page_size)
-        .fetch_all(&self.conn)
-        .await?;
-
-        Ok(MatchInfo::new(match_infos, vec![]))
+    async fn query_match_info(&self, query: MatchInfoQuery) -> Result<Vec<Matches>, OddsError> {
+        let match_infos =
+            sqlx::query_as("select * from euro.query($1, $2, $3, $4, $5, $6, $7, $8)")
+                .bind(query.book_maker_id)
+                .bind(query.league_id)
+                .bind(query.team_id)
+                .bind(query.game_year)
+                .bind(query.game_round)
+                .bind(query.is_desc)
+                .bind(query.cursor)
+                .bind(query.page_size)
+                .fetch_all(&self.conn)
+                .await?;
+        // Ok(MatchInfo::new(match_infos, vec![]))
+        Ok(match_infos)
     }
 }
 
