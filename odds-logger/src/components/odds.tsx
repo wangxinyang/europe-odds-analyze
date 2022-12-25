@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api'
 import { Col, Form, Input, Row, Select } from 'antd'
 import { useEffect, useState } from 'react'
-import { BasicDataType, SelectType } from '../types/data'
+import { DataType, SelectType } from '../types/data'
 
 interface IformItemLayout {
   labelCol: { span: number }
@@ -11,30 +11,21 @@ interface IformItemLayout {
 type FormItemLayoutProps = {
   formItemLayout: IformItemLayout
   index: number
+  is_add: boolean
 }
-
-type Bookmaker = {
-  id: number
-  name: string
-}
-
-// const formButtonLayout = {
-//   labelCol: { span: 4 },
-//   wrapperCol: { span: 8, offset: 4 },
-// }
 
 const formTailLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 6, offset: 0 },
 }
 
-function Odds({ formItemLayout, index }: FormItemLayoutProps) {
+function Odds({ formItemLayout, index, is_add }: FormItemLayoutProps) {
   const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
 
   useEffect(() => {
     const get_book_maker_list = async () => {
       let selectBookMakers: SelectType[] = []
-      let bookMakers = await invoke<BasicDataType[]>('get_book_maker_lists')
+      let bookMakers = await invoke<DataType[]>('get_book_maker_lists')
       bookMakers.map((item) => {
         selectBookMakers.push({ label: item.name, value: item.id })
       })
@@ -61,7 +52,7 @@ function Odds({ formItemLayout, index }: FormItemLayoutProps) {
               label="赔率公司"
               rules={[
                 {
-                  required: true,
+                  required: is_add ? true : false,
                   message: '请选择赔率公司',
                 },
               ]}>

@@ -18,12 +18,14 @@ const formTailLayout = {
 }
 
 type MatchInfoProps = {
+  match_id?: string
   is_add: boolean
+  is_update: boolean
   messageApi: MessageInstance
   handleValue?: Function
 }
 
-function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
+function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: MatchInfoProps) {
   // form
   const [form] = Form.useForm()
   // league list data
@@ -34,6 +36,8 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
   const [teamDataWithLeague, setTeamDataWithLeague] = useState<SelectType[]>([])
   // bookmaker data info
   const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
+  // update data
+  const [updateData, setUpdateData] = useState<MatchInfoDataType>({})
 
   // initial league list data
   useEffect(() => {
@@ -88,24 +92,46 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
     }
   }, [])
 
+  useEffect(() => {
+    form.setFieldsValue({
+      leagueInfo: updateData.league_name,
+      history_note: updateData.history_note,
+      game_year: updateData.game_year,
+      game_round: updateData.game_round,
+      home_team: updateData.home_team,
+      away_team: updateData.away_team,
+      game_result: updateData.game_result,
+      // game_time: updateData.game_time,
+      note: updateData.note,
+    })
+  }, [updateData])
+
   // query match infos
   const get_match_infos = async () => {
-    const values = await form.validateFields()
-    console.log(values)
-
-    let query = {
-      book_maker_id: values.bookmaker_id ? values.bookmaker_id : 0,
-      league_id: values.leagueInfo ? values.leagueInfo.value : 0,
-      team_id: values.home_team ? values.home_team : 0,
-      game_year: values.game_year,
-      game_round: values.game_round,
-      is_desc: true,
-      cursor: 100,
-      page_size: 10,
-    }
     try {
+      const values = await form.validateFields()
+      console.log(values)
+
+      let query = {
+        book_maker_id: values.bookmaker_id ? values.bookmaker_id : 0,
+        league_id: values.leagueInfo ? values.leagueInfo.value : 0,
+        team_id: values.home_team ? values.home_team : 0,
+        game_year: values.game_year,
+        game_round: values.game_round,
+        is_desc: true,
+        cursor: 100,
+        page_size: 10,
+      }
       let matchInfos = await invoke<MatchInfoDataType[]>('query_match_info', { query })
-      handleValue!(matchInfos)
+      // set table data with query mode
+      if (!is_add && handleValue) {
+        handleValue(matchInfos)
+      } else if (is_update && match_id) {
+        // update mode
+        let wait_update = matchInfos.find((item) => item.id === parseInt(match_id))
+        console.log('wait_update is:', wait_update)
+        setUpdateData(wait_update!)
+      }
     } catch (err) {
       console.log('err is', err)
       error(messageApi, 'Failed: 查询失败, 请检查数据')
@@ -219,7 +245,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
               />
             </Form.Item>
           </Col>
-          {is_add && (
+          {(is_add || is_update) && (
             <Col span={12}>
               <Form.Item {...formItemLayout} name="history_note" label="往绩">
                 <Input />
@@ -230,6 +256,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
         <Row>
           <Col span={12}>
             <Form.Item {...formItemLayout} name="game_year" label="赛季">
+              {/* <Input key={updateData.game_year} defaultValue={updateData.game_year} /> */}
               <Input />
             </Form.Item>
           </Col>
@@ -240,7 +267,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
           </Col>
         </Row>
         <Row gutter={1}>
-          {!is_add && (
+          {!is_add && !is_update && (
             <Col span={12}>
               <Form.Item {...formItemLayout} name={'bookmaker_id'} label="赔率公司">
                 <Select
@@ -255,7 +282,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
             <Form.Item
               {...formItemLayout}
               name="home_team"
-              label={is_add ? '主队' : '球队'}
+              label={is_add || is_update ? '主队' : '球队'}
               rules={[
                 {
                   required: is_add ? true : false,
@@ -266,7 +293,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
             </Form.Item>
           </Col>
 
-          {is_add && (
+          {(is_add || is_update) && (
             <Col span={12}>
               <Form.Item {...formItemLayout} name="game_result" label="比赛结果">
                 <Select
@@ -282,7 +309,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
           )}
         </Row>
         <Row gutter={1}>
-          {is_add && (
+          {(is_add || is_update) && (
             <Col span={12}>
               <Form.Item
                 {...formItemLayout}
@@ -298,7 +325,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
               </Form.Item>
             </Col>
           )}
-          {is_add && (
+          {(is_add || is_update) && (
             <Col span={12}>
               <Form.Item name="game_time" label="比赛时间">
                 <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="选择比赛时间" />
@@ -306,7 +333,7 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
             </Col>
           )}
         </Row>
-        {is_add && (
+        {(is_add || is_update) && (
           <Row>
             <Col span={12}>
               <Form.Item {...formItemLayout} name="note" label="备注">
@@ -315,23 +342,39 @@ function MatchInfo({ is_add, messageApi, handleValue }: MatchInfoProps) {
             </Col>
           </Row>
         )}
-        {is_add && <Odds formItemLayout={formItemLayout} index={1} />}
-        {is_add && <Odds formItemLayout={formItemLayout} index={2} />}
+        {(is_add || is_update) && (
+          <Odds is_add={is_add} formItemLayout={formItemLayout} index={1} />
+        )}
+        {(is_add || is_update) && (
+          <Odds is_add={is_add} formItemLayout={formItemLayout} index={2} />
+        )}
         <Row>
           <Col span={12}>
             <Form.Item {...formTailLayout}>
-              {is_add ? (
+              {is_add && (
                 <Button type="primary" onClick={handleSaveInfo}>
                   保存
                 </Button>
-              ) : (
+              )}
+              {is_update && (
+                <Button type="primary" onClick={handleSaveInfo}>
+                  更新
+                </Button>
+              )}
+              {!is_add && !is_update && (
                 <Button type="primary" onClick={get_match_infos}>
                   查询
                 </Button>
               )}
-              <Button type="primary" danger onClick={() => form.resetFields()}>
-                清空
-              </Button>
+              {!is_update ? (
+                <Button type="primary" danger onClick={() => form.resetFields()}>
+                  清空
+                </Button>
+              ) : (
+                <Button type="primary" danger onClick={() => window.history.back()}>
+                  返回
+                </Button>
+              )}
             </Form.Item>
           </Col>
         </Row>

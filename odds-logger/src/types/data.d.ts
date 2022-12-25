@@ -16,6 +16,7 @@ export interface DataType extends BasicDataType {
 
 export interface MatchInfoDataType extends BasicDataType {
   id: number
+  league_id: number
   home_team: string
   away_team: string
   game_time: string
@@ -23,6 +24,7 @@ export interface MatchInfoDataType extends BasicDataType {
   game_result: string
   game_year: string
   league_name: string
+  history_note: string
   note: string
 }
 

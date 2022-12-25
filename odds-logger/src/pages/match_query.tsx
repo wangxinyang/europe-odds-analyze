@@ -5,6 +5,7 @@ import Table, { ColumnsType } from 'antd/es/table'
 import { DataType, MatchInfoDataType, MatchInfoTableType } from '../types/data'
 import { error, success } from '../utils'
 import MatchInfo from '../components/match_info'
+import { Link } from 'react-router-dom'
 
 function MatchQuery() {
   const [messageApi, contextHolder] = message.useMessage()
@@ -67,9 +68,7 @@ function MatchQuery() {
       render: (_, record, _index) => {
         return (
           <Space size={8}>
-            <Popconfirm title="Sure to open?" onConfirm={() => handleDetail(record)}>
-              <a>详情</a>
-            </Popconfirm>
+            <Link to={`/matchDetail/${record.id}`}>详情</Link>
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
               <a>删除</a>
             </Popconfirm>
@@ -78,8 +77,6 @@ function MatchQuery() {
       },
     },
   ]
-
-  const handleDetail = async (record: MatchInfoTableType) => {}
 
   const handleDelete = async (record: MatchInfoTableType) => {
     try {
@@ -121,7 +118,12 @@ function MatchQuery() {
   return (
     <>
       {contextHolder}
-      <MatchInfo is_add={false} messageApi={messageApi} handleValue={getMatchInfoTableData} />
+      <MatchInfo
+        is_add={false}
+        is_update={false}
+        messageApi={messageApi}
+        handleValue={getMatchInfoTableData}
+      />
       <Table columns={columns} dataSource={tableData} />
     </>
   )

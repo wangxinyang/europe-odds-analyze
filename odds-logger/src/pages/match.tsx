@@ -9,7 +9,7 @@ function Match() {
   return (
     <>
       {contextHolder}
-      <MatchInfo is_add={true} messageApi={messageApi} />
+      <MatchInfo is_add={true} is_update={false} messageApi={messageApi} />
     </>
   )
 }

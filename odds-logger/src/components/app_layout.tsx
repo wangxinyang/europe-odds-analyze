@@ -34,8 +34,6 @@ function AppLayout() {
         }
       })
     }
-    console.log(pathArr)
-
     setDefaultSelectedKeys(pathArr)
     setDefaultOpenKeys(pathArr)
     setIsInit(true)
