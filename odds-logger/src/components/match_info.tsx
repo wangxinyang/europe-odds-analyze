@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import { MessageInstance } from 'antd/es/message/interface'
-import { DataType, MatchInfoDataType, SelectType } from '../types/data'
+import { DataType, MatchInfoDataType, OddsDataType, SelectType } from '../types/data'
 import Odds from './odds'
 import * as moment from 'moment'
 
@@ -37,7 +37,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   // bookmaker data info
   const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
   // update data
-  const [updateData, setUpdateData] = useState<MatchInfoDataType>({})
+  const [updateData, setUpdateData] = useState<MatchInfoDataType>({} as MatchInfoDataType)
 
   // initial league list data
   useEffect(() => {
@@ -128,9 +128,15 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
         handleValue(matchInfos)
       } else if (is_update && match_id) {
         // update mode
-        let wait_update = matchInfos.find((item) => item.id === parseInt(match_id))
-        console.log('wait_update is:', wait_update)
-        setUpdateData(wait_update!)
+        let matchInfo = matchInfos.find((item) => item.id === parseInt(match_id))
+        console.log('wait_update is:', matchInfo)
+        // query odds info by match id
+        if (matchInfo) {
+          let odds = await invoke<OddsDataType[]>('query_odds_by_id', { id: matchInfo.id })
+          console.log('odds is:', odds)
+          matchInfo.oddsInfo = odds
+          setUpdateData(matchInfo)
+        }
       }
     } catch (err) {
       console.log('err is', err)
@@ -172,7 +178,8 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
 
       let oddsInfos = [
         {
-          bookmaker_id: values.bookmaker_id1,
+          bookmaker_id: values.bookmaker1.value,
+          bookmaker_name: values.bookmaker1.label,
           home_win_start: values.home_win_start1,
           home_win_end: values.home_win_end1,
           draw_start: values.draw_start1,
@@ -181,7 +188,8 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
           away_win_end: values.away_win_end1,
         },
         {
-          bookmaker_id: values.bookmaker_id2,
+          bookmaker_id: values.bookmaker2.value,
+          bookmaker_name: values.bookmaker2.label,
           home_win_start: values.home_win_start2,
           home_win_end: values.home_win_end2,
           draw_start: values.draw_start2,
@@ -342,12 +350,27 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
             </Col>
           </Row>
         )}
-        {(is_add || is_update) && (
-          <Odds is_add={is_add} formItemLayout={formItemLayout} index={1} />
+        {is_add && (
+          <>
+            <Odds is_add={is_add} formItemLayout={formItemLayout} index={1} />
+            <Odds is_add={is_add} formItemLayout={formItemLayout} index={2} />
+          </>
         )}
-        {(is_add || is_update) && (
-          <Odds is_add={is_add} formItemLayout={formItemLayout} index={2} />
-        )}
+        {is_update &&
+          updateData &&
+          updateData.oddsInfo &&
+          updateData.oddsInfo.map((item, index) => {
+            return (
+              <Odds
+                key={index}
+                form={form}
+                initValue={item}
+                is_add={false}
+                formItemLayout={formItemLayout}
+                index={index}
+              />
+            )
+          })}
         <Row>
           <Col span={12}>
             <Form.Item {...formTailLayout}>

@@ -231,11 +231,13 @@ impl EuropeOdds for OddsManager {
         let mut result_odds: Vec<Odds> = Vec::new();
         for mut odd in odds.into_iter() {
             let id = sqlx::query(
-                "INSERT INTO euro.odds (match_id, bookmaker_id, home_win_start, draw_start, away_win_start,
-                    home_win_end, draw_end, away_win_end, note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
+                "INSERT INTO euro.odds (match_id, bookmaker_id, bookmaker_name, home_win_start, draw_start, away_win_start,
+                    home_win_end, draw_end, away_win_end, note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    RETURNING id",
             )
             .bind(id)
             .bind(odd.bookmaker_id)
+            .bind(&odd.bookmaker_name)
             .bind(&odd.home_win_start)
             .bind(&odd.draw_start)
             .bind(&odd.away_win_start)
@@ -263,7 +265,7 @@ impl EuropeOdds for OddsManager {
             let updated_matches = sqlx::query_as::<_, Matches>(
             "UPDATE euro.matches SET league_id = $1, home_team_id = $2, home_team = $3, away_team_id = $4,
             away_team = $5, game_time = $6, game_result = $7, note = $8, game_year = $9,
-            game_round = $10 WHERE id = $11 RETURNING *",)
+            game_round = $10, league_name = $11 WHERE id = $12 RETURNING *",)
                 .bind(item.league_id)
                 .bind(item.home_team_id)
                 .bind(&item.home_team)
@@ -274,6 +276,7 @@ impl EuropeOdds for OddsManager {
                 .bind(&item.note)
                 .bind(&item.game_year)
                 .bind(&item.game_round)
+                .bind(&item.league_name)
                 .bind(item.id)
                 .fetch_one(&self.conn)
                 .await?;
@@ -284,7 +287,7 @@ impl EuropeOdds for OddsManager {
                 let updated_odd = sqlx::query_as::<_, Odds>(
                     "UPDATE euro.odds SET bookmaker_id = $1, home_win_start = $2, draw_start = $3,
                     away_win_start = $4, home_win_end = $5, draw_end = $6, away_win_end = $7,
-                    note = $8 WHERE match_id = $9 RETURNING *",
+                    note = $8, bookmaker_name= $9 WHERE match_id = $10 RETURNING *",
                 )
                 .bind(odd.bookmaker_id)
                 .bind(odd.home_win_start)
@@ -294,6 +297,7 @@ impl EuropeOdds for OddsManager {
                 .bind(odd.draw_end)
                 .bind(odd.away_win_end)
                 .bind(&odd.note)
+                .bind(&odd.bookmaker_name)
                 .bind(updated_matches.id)
                 .fetch_one(&self.conn)
                 .await?;
@@ -315,6 +319,7 @@ impl EuropeOdds for OddsManager {
         Ok(count.rows_affected() as i32)
     }
 
+    /// query match data by conditions
     async fn query_match_info(&self, query: MatchInfoQuery) -> Result<Vec<Matches>, OddsError> {
         let match_infos =
             sqlx::query_as("select * from euro.query($1, $2, $3, $4, $5, $6, $7, $8)")
@@ -330,6 +335,16 @@ impl EuropeOdds for OddsManager {
                 .await?;
         // Ok(MatchInfo::new(match_infos, vec![]))
         Ok(match_infos)
+    }
+
+    /// query odds data by match id
+    async fn query_odds_info_by_id(&self, id: i32) -> Result<Vec<Odds>, OddsError> {
+        let odds_infos = sqlx::query_as("select * from euro.odds where match_id = $1")
+            .bind(id)
+            .fetch_all(&self.conn)
+            .await?;
+        // Ok(MatchInfo::new(match_infos, vec![]))
+        Ok(odds_infos)
     }
 }
 

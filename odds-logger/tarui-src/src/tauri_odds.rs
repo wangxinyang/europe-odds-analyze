@@ -9,6 +9,7 @@ use tauri::State;
 #[derive(Debug, Deserialize)]
 pub struct OddsInfo {
     pub bookmaker_id: i32,
+    pub bookmaker_name: String,
     pub home_win_start: Option<String>,
     pub draw_start: Option<String>,
     pub away_win_start: Option<String>,
@@ -74,6 +75,7 @@ pub async fn save_match_odds(
         .map(|info| {
             OddsBuilder::default()
                 .bookmaker_id(info.bookmaker_id)
+                .bookmaker_name(info.bookmaker_name.clone())
                 .home_win_start_setter(
                     info.home_win_start
                         .clone()
@@ -134,4 +136,14 @@ pub async fn delete_match_info(manager: State<'_, OddsManager>, id: i32) -> Resu
     let count = manager.delete_match_info(id).await?;
     println!("delete info count is: {:?}", count);
     Ok(count)
+}
+
+#[tauri::command]
+pub async fn query_odds_by_id(
+    manager: State<'_, OddsManager>,
+    id: i32,
+) -> Result<Vec<Odds>, OddsError> {
+    let manager = &*manager;
+    let odds = manager.query_odds_info_by_id(id).await?;
+    Ok(odds)
 }

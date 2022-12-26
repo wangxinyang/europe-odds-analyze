@@ -61,6 +61,7 @@ CREATE TABLE euro.odds (
     id SERIAL NOT NULL,
     match_id SERIAL NOT NULL,
     bookmaker_id SERIAL NOT NULL,
+    bookmaker_name VARCHAR(30) NOT NULL,
     home_win_start NUMERIC(5,2) DEFAULT 0.0,
     draw_start NUMERIC(5,2) DEFAULT 0.0,
     away_win_start NUMERIC(5,2) DEFAULT 0.0,

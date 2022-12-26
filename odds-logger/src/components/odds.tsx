@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api'
-import { Col, Form, Input, Row, Select } from 'antd'
+import { Col, Form, FormInstance, Input, Row, Select } from 'antd'
 import { useEffect, useState } from 'react'
-import { DataType, SelectType } from '../types/data'
+import { DataType, OddsDataType, SelectType } from '../types/data'
 
 interface IformItemLayout {
   labelCol: { span: number }
@@ -12,6 +12,8 @@ type FormItemLayoutProps = {
   formItemLayout: IformItemLayout
   index: number
   is_add: boolean
+  initValue?: OddsDataType
+  form?: FormInstance
 }
 
 const formTailLayout = {
@@ -19,8 +21,24 @@ const formTailLayout = {
   wrapperCol: { span: 6, offset: 0 },
 }
 
-function Odds({ formItemLayout, index, is_add }: FormItemLayoutProps) {
+function Odds({ formItemLayout, index, is_add, initValue, form }: FormItemLayoutProps) {
   const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
+
+  // set data into input field with update mode
+  useEffect(() => {
+    if (form && initValue) {
+      form.setFieldsValue({
+        [`bookmaker_id${index}`]: initValue.bookmark_id,
+        [`home_win_start${index}`]: initValue.home_win_start,
+        [`draw_start${index}`]: initValue.draw_start,
+        [`away_win_start${index}`]: initValue.away_win_start,
+        [`home_win_end${index}`]: initValue.home_win_end,
+        [`draw_end${index}`]: initValue.draw_end,
+        [`away_win_end${index}`]: initValue.away_win_end,
+        [`note${index}`]: initValue.note,
+      })
+    }
+  }, [initValue])
 
   useEffect(() => {
     const get_book_maker_list = async () => {
@@ -48,7 +66,7 @@ function Odds({ formItemLayout, index, is_add }: FormItemLayoutProps) {
           <Col span={12}>
             <Form.Item
               {...formItemLayout}
-              name={'bookmaker_id' + index}
+              name={'bookmaker' + index}
               label="赔率公司"
               rules={[
                 {
@@ -57,6 +75,7 @@ function Odds({ formItemLayout, index, is_add }: FormItemLayoutProps) {
                 },
               ]}>
               <Select
+                labelInValue={true}
                 placeholder="选择赔率公司"
                 //     onChange={handleLeagueChange}
                 options={bookmakers}

@@ -54,8 +54,11 @@ pub trait EuropeOdds {
     /// delete team data from persistence
     async fn delete_team(&self, id: TeamId) -> Result<Vec<Team>, OddsError>;
 
-    /// query team data by league id
+    /// query match data by conditions
     async fn query_match_info(&self, query: MatchInfoQuery) -> Result<Vec<Matches>, OddsError>;
+
+    /// query odds data by match id
+    async fn query_odds_info_by_id(&self, id: i32) -> Result<Vec<Odds>, OddsError>;
 
     /// add match data to persistence
     async fn create_match_info(

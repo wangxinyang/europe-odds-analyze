@@ -12,6 +12,8 @@ pub struct Odds {
     pub match_id: i32,
     #[builder(default)]
     pub bookmaker_id: i32,
+    #[builder(default)]
+    pub bookmaker_name: String,
     #[builder(default, setter(custom))]
     pub home_win_start: BigDecimal,
     #[builder(default, setter(custom))]
