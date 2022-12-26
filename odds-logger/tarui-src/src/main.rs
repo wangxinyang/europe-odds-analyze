@@ -10,10 +10,11 @@ use app::{
     __cmd__delete_team_info, __cmd__get_book_maker_lists, __cmd__get_league_lists,
     __cmd__get_team_lists, __cmd__query_match_info, __cmd__query_odds_by_id,
     __cmd__query_teams_with_league, __cmd__save_book_maker_info, __cmd__save_league_info,
-    __cmd__save_match_odds, __cmd__save_team_info, delete_book_maker_info, delete_league_info,
-    delete_match_info, delete_team_info, get_book_maker_lists, get_league_lists, get_team_lists,
-    query_match_info, query_odds_by_id, query_teams_with_league, save_book_maker_info,
-    save_league_info, save_match_odds, save_team_info,
+    __cmd__save_match_odds, __cmd__save_team_info, __cmd__update_match_odds,
+    delete_book_maker_info, delete_league_info, delete_match_info, delete_team_info,
+    get_book_maker_lists, get_league_lists, get_team_lists, query_match_info, query_odds_by_id,
+    query_teams_with_league, save_book_maker_info, save_league_info, save_match_odds,
+    save_team_info, update_match_odds,
 };
 use tauri::async_runtime::block_on;
 use tauri::Manager;
@@ -46,6 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             query_match_info,
             delete_match_info,
             query_odds_by_id,
+            update_match_odds,
         ])
         .setup(|app| {
             app.manage(odds_manager);

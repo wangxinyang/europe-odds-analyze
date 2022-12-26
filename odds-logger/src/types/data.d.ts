@@ -15,8 +15,10 @@ export interface DataType extends BasicDataType {
 }
 
 export interface OddsDataType extends BasicDataType {
+  id: number
   match_id: number
-  bookmark_id: number
+  bookmaker_id: number
+  bookmaker_name: string
   home_win_start: number
   draw_start: number
   away_win_start: number
@@ -30,6 +32,8 @@ export interface MatchInfoDataType extends BasicDataType {
   id: number
   league_id: number
   league_name: string
+  home_team_id: number
+  away_team_id: number
   home_team: string
   away_team: string
   game_time: string
@@ -50,4 +54,33 @@ export interface MatchInfoTableType extends BasicDataType {
   round: string
   note: string
   time: string
+}
+
+export interface MatchOddsFormType {
+  leagueInfo: SelectType
+  home_team: SelectType
+  away_team: SelectType
+  game_time: MomentInput
+  game_year: String
+  game_round: String
+  game_result: String
+  history_note: String
+  note: String
+  match_id: number
+  // TODO: not confirmed
+  bookmaker0: SelectType
+  home_win_start0: String
+  home_win_end0: String
+  draw_start0: String
+  draw_end0: String
+  away_win_start0: String
+  away_win_end0: String
+  bookmaker1: SelectType
+  home_win_start1: String
+  home_win_end1: String
+  draw_start1: String
+  draw_end1: String
+  away_win_start1: String
+  away_win_end1: String
+  // TODO: not confirmed
 }

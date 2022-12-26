@@ -27,8 +27,10 @@ function Odds({ formItemLayout, index, is_add, initValue, form }: FormItemLayout
   // set data into input field with update mode
   useEffect(() => {
     if (form && initValue) {
+      console.log(initValue)
+
       form.setFieldsValue({
-        [`bookmaker_id${index}`]: initValue.bookmark_id,
+        [`bookmaker${index}`]: initValue.bookmaker_name,
         [`home_win_start${index}`]: initValue.home_win_start,
         [`draw_start${index}`]: initValue.draw_start,
         [`away_win_start${index}`]: initValue.away_win_start,

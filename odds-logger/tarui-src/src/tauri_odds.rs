@@ -8,6 +8,8 @@ use tauri::State;
 
 #[derive(Debug, Deserialize)]
 pub struct OddsInfo {
+    pub id: i32,
+    pub match_id: i32,
     pub bookmaker_id: i32,
     pub bookmaker_name: String,
     pub home_win_start: Option<String>,
@@ -19,7 +21,8 @@ pub struct OddsInfo {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct MatchOddsInfo {
+pub struct MatchesInfo {
+    pub id: i32,
     pub league_id: i32,
     pub league_name: String,
     pub home_team_id: i32,
@@ -48,11 +51,62 @@ pub async fn query_teams_with_league(
 #[tauri::command]
 pub async fn save_match_odds(
     manager: State<'_, OddsManager>,
-    match_info: MatchOddsInfo,
+    match_info: MatchesInfo,
     odds_infos: Vec<OddsInfo>,
 ) -> Result<MatchInfo, OddsError> {
     let manager = &*manager;
+    let (m_info, odds_infos) = builde_match_odds_info(match_info, odds_infos);
+    let info = manager.create_match_info(m_info, odds_infos).await?;
+    Ok(info)
+}
+
+#[tauri::command]
+pub async fn query_match_info(
+    manager: State<'_, OddsManager>,
+    query: MatchInfoQuery,
+) -> Result<Vec<Matches>, OddsError> {
+    let manager = &*manager;
+    let match_info = manager.query_match_info(query).await?;
+    Ok(match_info)
+}
+
+#[tauri::command]
+pub async fn delete_match_info(manager: State<'_, OddsManager>, id: i32) -> Result<i32, OddsError> {
+    let manager = &*manager;
+    let count = manager.delete_match_info(id).await?;
+    println!("delete info count is: {:?}", count);
+    Ok(count)
+}
+
+#[tauri::command]
+pub async fn query_odds_by_id(
+    manager: State<'_, OddsManager>,
+    id: i32,
+) -> Result<Vec<Odds>, OddsError> {
+    let manager = &*manager;
+    let odds = manager.query_odds_info_by_id(id).await?;
+    Ok(odds)
+}
+
+// Result<Vec<MatchInfo>, OddsError>
+#[tauri::command]
+pub async fn update_match_odds(
+    manager: State<'_, OddsManager>,
+    match_info: MatchesInfo,
+    odds_infos: Vec<OddsInfo>,
+) -> Result<(), OddsError> {
+    let manager = &*manager;
+    let (m_info, odds_infos) = builde_match_odds_info(match_info, odds_infos);
+    manager.update_match_info(m_info, odds_infos).await?;
+    Ok(())
+}
+
+fn builde_match_odds_info(
+    match_info: MatchesInfo,
+    odds_infos: Vec<OddsInfo>,
+) -> (Matches, Vec<Odds>) {
     let m_info = MatchesBuilder::default()
+        .id(match_info.id)
         .league_id(match_info.league_id)
         .league_name(match_info.league_name)
         .home_team_id(match_info.home_team_id)
@@ -74,6 +128,8 @@ pub async fn save_match_odds(
         .iter()
         .map(|info| {
             OddsBuilder::default()
+                .id(info.id)
+                .match_id(info.match_id)
                 .bookmaker_id(info.bookmaker_id)
                 .bookmaker_name(info.bookmaker_name.clone())
                 .home_win_start_setter(
@@ -116,34 +172,5 @@ pub async fn save_match_odds(
                 .unwrap()
         })
         .collect();
-    let info = manager.create_match_info(m_info, odds_infos).await?;
-    Ok(info)
-}
-
-#[tauri::command]
-pub async fn query_match_info(
-    manager: State<'_, OddsManager>,
-    query: MatchInfoQuery,
-) -> Result<Vec<Matches>, OddsError> {
-    let manager = &*manager;
-    let match_info = manager.query_match_info(query).await?;
-    Ok(match_info)
-}
-
-#[tauri::command]
-pub async fn delete_match_info(manager: State<'_, OddsManager>, id: i32) -> Result<i32, OddsError> {
-    let manager = &*manager;
-    let count = manager.delete_match_info(id).await?;
-    println!("delete info count is: {:?}", count);
-    Ok(count)
-}
-
-#[tauri::command]
-pub async fn query_odds_by_id(
-    manager: State<'_, OddsManager>,
-    id: i32,
-) -> Result<Vec<Odds>, OddsError> {
-    let manager = &*manager;
-    let odds = manager.query_odds_info_by_id(id).await?;
-    Ok(odds)
+    (m_info, odds_infos)
 }

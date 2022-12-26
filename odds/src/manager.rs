@@ -257,53 +257,48 @@ impl EuropeOdds for OddsManager {
     }
 
     /// update match data to persistence
-    async fn update_match_info(&self, match_info: MatchInfo) -> Result<(), OddsError> {
-        let matches = match_info.matches;
-        let odds = match_info.odds;
-        for item in matches.into_iter() {
-            // update matches table
-            let updated_matches = sqlx::query_as::<_, Matches>(
-            "UPDATE euro.matches SET league_id = $1, home_team_id = $2, home_team = $3, away_team_id = $4,
-            away_team = $5, game_time = $6, game_result = $7, note = $8, game_year = $9,
-            game_round = $10, league_name = $11 WHERE id = $12 RETURNING *",)
-                .bind(item.league_id)
-                .bind(item.home_team_id)
-                .bind(&item.home_team)
-                .bind(item.away_team_id)
-                .bind(&item.away_team)
-                .bind(item.game_time)
-                .bind(&item.game_result)
-                .bind(&item.note)
-                .bind(&item.game_year)
-                .bind(&item.game_round)
-                .bind(&item.league_name)
-                .bind(item.id)
-                .fetch_one(&self.conn)
-                .await?;
-
-            // update odds table
-            let mut result_odds: Vec<Odds> = Vec::new();
-            for odd in odds.clone().into_iter() {
-                let updated_odd = sqlx::query_as::<_, Odds>(
-                    "UPDATE euro.odds SET bookmaker_id = $1, home_win_start = $2, draw_start = $3,
-                    away_win_start = $4, home_win_end = $5, draw_end = $6, away_win_end = $7,
-                    note = $8, bookmaker_name= $9 WHERE match_id = $10 RETURNING *",
-                )
-                .bind(odd.bookmaker_id)
-                .bind(odd.home_win_start)
-                .bind(odd.draw_start)
-                .bind(odd.away_win_start)
-                .bind(odd.home_win_end)
-                .bind(odd.draw_end)
-                .bind(odd.away_win_end)
-                .bind(&odd.note)
-                .bind(&odd.bookmaker_name)
-                .bind(updated_matches.id)
-                .fetch_one(&self.conn)
-                .await?;
-
-                result_odds.push(updated_odd);
-            }
+    async fn update_match_info(&self, matches: Matches, odds: Vec<Odds>) -> Result<(), OddsError> {
+        // update matches table
+        sqlx::query_as::<_, Matches>(
+            "UPDATE euro.matches SET league_id = $1,
+        home_team_id = $2, home_team = $3, away_team_id = $4, away_team = $5, game_time = $6,
+        game_result = $7, note = $8, game_year = $9, game_round = $10,
+        league_name = $11, history_note = $12 WHERE id = $13 RETURNING *",
+        )
+        .bind(matches.league_id)
+        .bind(matches.home_team_id)
+        .bind(&matches.home_team)
+        .bind(matches.away_team_id)
+        .bind(&matches.away_team)
+        .bind(matches.game_time)
+        .bind(&matches.game_result)
+        .bind(&matches.note)
+        .bind(&matches.game_year)
+        .bind(&matches.game_round)
+        .bind(&matches.league_name)
+        .bind(&matches.history_note)
+        .bind(matches.id)
+        .fetch_one(&self.conn)
+        .await?;
+        for odd in odds.clone().into_iter() {
+            sqlx::query_as::<_, Odds>(
+                "UPDATE euro.odds SET bookmaker_id = $1, home_win_start = $2, draw_start = $3,
+             away_win_start = $4, home_win_end = $5, draw_end = $6, away_win_end = $7, note = $8,
+             bookmaker_name= $9 WHERE match_id = $10 and id = $11 RETURNING *",
+            )
+            .bind(odd.bookmaker_id)
+            .bind(odd.home_win_start)
+            .bind(odd.draw_start)
+            .bind(odd.away_win_start)
+            .bind(odd.home_win_end)
+            .bind(odd.draw_end)
+            .bind(odd.away_win_end)
+            .bind(&odd.note)
+            .bind(&odd.bookmaker_name)
+            .bind(odd.match_id)
+            .bind(odd.id)
+            .fetch_one(&self.conn)
+            .await?;
         }
 
         Ok(())
@@ -630,22 +625,17 @@ mod tests {
         let mut match_info = odds_manager.create_match_info(matches, odds).await.unwrap();
         // update match info
         match_info.matches[0].game_result = Some("1:1".into());
+        match_info.odds[0].match_id = match_info.matches[0].id;
+        match_info.odds[1].match_id = match_info.matches[0].id;
         match_info.odds[0].home_win_start = "3.01".parse().unwrap();
         match_info.odds[1].home_win_start = "4.05".parse().unwrap();
         odds_manager
-            .update_match_info(match_info.clone())
+            .update_match_info(match_info.matches[0].clone(), match_info.odds.clone())
             .await
             .unwrap();
-
         assert_eq!(match_info.matches[0].clone().game_result.unwrap(), "1:1");
-        assert_eq!(
-            match_info.clone().odds[0].home_win_start,
-            "3.01".parse().unwrap()
-        );
-        assert_eq!(
-            match_info.clone().odds[1].home_win_start,
-            "4.05".parse().unwrap()
-        );
+        assert_eq!(match_info.odds[0].home_win_start, "3.01".parse().unwrap());
+        assert_eq!(match_info.odds[1].home_win_start, "4.05".parse().unwrap());
     }
 
     #[tokio::test]

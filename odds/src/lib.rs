@@ -68,7 +68,7 @@ pub trait EuropeOdds {
     ) -> Result<MatchInfo, OddsError>;
 
     /// update match data to persistence
-    async fn update_match_info(&self, match_info: MatchInfo) -> Result<(), OddsError>;
+    async fn update_match_info(&self, matches: Matches, odds: Vec<Odds>) -> Result<(), OddsError>;
 
     /// delete match data from persistence
     async fn delete_match_info(&self, id: MatchId) -> Result<i32, OddsError>;
