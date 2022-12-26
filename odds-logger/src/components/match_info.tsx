@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import { MessageInstance } from 'antd/es/message/interface'
+import dayjs from 'dayjs'
+import Odds from './odds'
 import {
   DataType,
   MatchInfoDataType,
@@ -10,8 +12,6 @@ import {
   OddsDataType,
   SelectType,
 } from '../types/data'
-import Odds from './odds'
-import * as moment from 'moment'
 
 const formItemLayout = {
   labelCol: { span: 4 },
@@ -99,8 +99,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   }, [])
 
   useEffect(() => {
-    console.log('updateData is:', updateData)
-
     form.setFieldsValue({
       leagueInfo: updateData.league_name,
       history_note: updateData.history_note,
@@ -109,7 +107,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       home_team: updateData.home_team,
       away_team: updateData.away_team,
       game_result: updateData.game_result,
-      // game_time: updateData.game_time,
+      game_time: updateData.game_time ? dayjs(updateData.game_time, 'YYYY/MM/DD HH:mm:ss') : '',
       note: updateData.note,
     })
   }, [updateData])
@@ -118,8 +116,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   const get_match_infos = async () => {
     try {
       const values = await form.validateFields()
-      console.log(values)
-
       let query = {
         book_maker_id: values.bookmaker_id ? values.bookmaker_id : 0,
         league_id: values.leagueInfo ? values.leagueInfo.value : 0,
@@ -197,9 +193,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   }
 
   const buildMatchInfoBySave = (values: MatchOddsFormType) => {
-    let game_time = moment(values.game_time).format('YYYY-MM-DD HH:mm:ss')
-    console.log('game_time: ', game_time)
-    console.log('game_time: ', moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
     let matchInfo = {
       id: 0,
       league_id: values.leagueInfo.value,
@@ -208,7 +201,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       away_team_id: values.away_team.value,
       home_team_name: values.home_team.label,
       away_team_name: values.away_team.label,
-      game_time,
+      game_time: dayjs(values.game_time).format('YYYY-MM-DD HH:mm:ss'),
       game_year: values.game_year,
       game_round: values.game_round,
       game_result: values.game_result,
@@ -219,7 +212,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   }
 
   const buildMatchInfoByUpdate = (values: MatchOddsFormType) => {
-    let game_time = moment(values.game_time).format('YYYY-MM-DD HH:mm:ss')
     let matchInfo = {
       id: parseInt(match_id as string),
       league_id: updateData.league_id,
@@ -228,7 +220,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       away_team_id: updateData.away_team_id,
       home_team_name: values.home_team,
       away_team_name: values.away_team,
-      game_time,
+      game_time: dayjs(values.game_time).format('YYYY-MM-DD HH:mm:ss'),
       game_year: values.game_year,
       game_round: values.game_round,
       game_result: values.game_result,

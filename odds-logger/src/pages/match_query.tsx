@@ -6,6 +6,7 @@ import { DataType, MatchInfoDataType, MatchInfoTableType } from '../types/data'
 import { error, success } from '../utils'
 import MatchInfo from '../components/match_info'
 import { Link } from 'react-router-dom'
+import dayjs from 'dayjs'
 
 function MatchQuery() {
   const [messageApi, contextHolder] = message.useMessage()
@@ -108,7 +109,7 @@ function MatchQuery() {
         year: item.game_year,
         round: item.game_round,
         result: item.game_result,
-        time: item.game_time,
+        time: dayjs(item.game_time).format('YYYY/MM/DD HH:mm:ss'),
         note: item.note,
       })
     })
