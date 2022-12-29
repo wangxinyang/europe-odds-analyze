@@ -55,7 +55,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 800,
+        "height": 1000,
         "resizable": true,
         "title": "odds-logger",
         "width": 1400

@@ -1,4 +1,5 @@
 import { Button, Col, DatePicker, Form, Input, Row, Select, Space } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
@@ -10,6 +11,9 @@ import {
   MatchInfoDataType,
   MatchOddsFormType,
   OddsDataType,
+  OddsSubmitType,
+  OddsType,
+  OddsUpdateDataType,
   SelectType,
 } from '../types/data'
 
@@ -137,7 +141,17 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
         // query odds info by match id
         if (matchInfo) {
           let odds = await invoke<OddsDataType[]>('query_odds_by_id', { id: matchInfo.id })
-          console.log('odds is:', odds)
+          let odds_res: OddsUpdateDataType[] = []
+          odds.map((odd, index) => {
+            odds_res.push({
+              ...odd,
+              key: index,
+              name: index,
+              isListField: true,
+              fieldKey: index,
+            })
+          })
+          console.log('odds is:', odds_res)
           matchInfo.oddsInfo = odds
           setUpdateData(matchInfo)
         }
@@ -163,11 +177,11 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     try {
       const values = await form.validateFields()
       console.log('handleUpdateInfo Received values of form: ', values)
-      const matchInfo = buildMatchInfoByUpdate(values)
-      console.log('handleUpdateInfo Received values of form matchInfo: ', matchInfo)
-      const oddsInfos = buildOddsInfoByUpdate(values)
-      console.log('handleUpdateInfo Received values of form oddsInfos: ', oddsInfos)
-      await invoke<number>('update_match_odds', { matchInfo, oddsInfos })
+      // const matchInfo = buildMatchInfoByUpdate(values)
+      // console.log('handleUpdateInfo Received values of form matchInfo: ', matchInfo)
+      // const oddsInfos = buildOddsInfoByUpdate(values)
+      // console.log('handleUpdateInfo Received values of form oddsInfos: ', oddsInfos)
+      // await invoke<number>('update_match_odds', { matchInfo, oddsInfos })
       success(messageApi, 'Successful: 更新成功')
     } catch (err) {
       console.log('handleUpdateInfo error is:', err)
@@ -179,8 +193,14 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
+      console.log('save values is:', values)
+      // if odds data was not input
+      if (values.odds === undefined) {
+        error(messageApi, 'Failed: 保存失败, 请输入赔率数据')
+        return
+      }
       const matchInfo = buildMatchInfoBySave(values)
-      const oddsInfos = buildOddsInfoBySave(values)
+      const oddsInfos = buildOddsInfoBySave(values.odds)
       // save match and odds
       await invoke<number>('save_match_odds', { matchInfo, oddsInfos })
       // clear second select content
@@ -201,7 +221,9 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       away_team_id: values.away_team.value,
       home_team_name: values.home_team.label,
       away_team_name: values.away_team.label,
-      game_time: dayjs(values.game_time).format('YYYY-MM-DD HH:mm:ss'),
+      game_time: values.game_time
+        ? dayjs(values.game_time).format('YYYY-MM-DD HH:mm:ss')
+        : undefined,
       game_year: values.game_year,
       game_round: values.game_round,
       game_result: values.game_result,
@@ -220,7 +242,9 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       away_team_id: updateData.away_team_id,
       home_team_name: values.home_team,
       away_team_name: values.away_team,
-      game_time: dayjs(values.game_time).format('YYYY-MM-DD HH:mm:ss'),
+      game_time: values.game_time
+        ? dayjs(values.game_time).format('YYYY-MM-DD HH:mm:ss')
+        : undefined,
       game_year: values.game_year,
       game_round: values.game_round,
       game_result: values.game_result,
@@ -230,33 +254,17 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     return matchInfo
   }
 
-  const buildOddsInfoBySave = (values: MatchOddsFormType) => {
-    let oddsInfos = [
-      {
+  const buildOddsInfoBySave = (odds: OddsType[]) => {
+    let oddsInfos: OddsSubmitType[] = []
+    odds.map((item) => {
+      oddsInfos.push({
+        ...item,
         id: 0,
         match_id: 0,
-        bookmaker_id: values.bookmaker0.value,
-        bookmaker_name: values.bookmaker0.label,
-        home_win_start: values.home_win_start0,
-        home_win_end: values.home_win_end0,
-        draw_start: values.draw_start0,
-        draw_end: values.draw_end0,
-        away_win_start: values.away_win_start0,
-        away_win_end: values.away_win_end0,
-      },
-      {
-        id: 0,
-        match_id: 0,
-        bookmaker_id: values.bookmaker1.value,
-        bookmaker_name: values.bookmaker1.label,
-        home_win_start: values.home_win_start1,
-        home_win_end: values.home_win_end1,
-        draw_start: values.draw_start1,
-        draw_end: values.draw_end1,
-        away_win_start: values.away_win_start1,
-        away_win_end: values.away_win_end1,
-      },
-    ]
+        bookmaker_id: item.bookmaker.value as number,
+        bookmaker_name: item.bookmaker.label,
+      })
+    })
     return oddsInfos
   }
 
@@ -267,24 +275,24 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
         match_id: parseInt(match_id as string),
         bookmaker_id: updateData.oddsInfo[0].bookmaker_id,
         bookmaker_name: updateData.oddsInfo[0].bookmaker_name,
-        home_win_start: values.home_win_start0,
-        home_win_end: values.home_win_end0,
-        draw_start: values.draw_start0,
-        draw_end: values.draw_end0,
-        away_win_start: values.away_win_start0,
-        away_win_end: values.away_win_end0,
+        // home_win_start: values.home_win_start0,
+        // home_win_end: values.home_win_end0,
+        // draw_start: values.draw_start0,
+        // draw_end: values.draw_end0,
+        // away_win_start: values.away_win_start0,
+        // away_win_end: values.away_win_end0,
       },
       {
         id: updateData.oddsInfo[1].id,
         match_id: parseInt(match_id as string),
         bookmaker_id: updateData.oddsInfo[1].bookmaker_id,
         bookmaker_name: updateData.oddsInfo[1].bookmaker_name,
-        home_win_start: values.home_win_start1,
-        home_win_end: values.home_win_end1,
-        draw_start: values.draw_start1,
-        draw_end: values.draw_end1,
-        away_win_start: values.away_win_start1,
-        away_win_end: values.away_win_end1,
+        // home_win_start: values.home_win_start1,
+        // home_win_end: values.home_win_end1,
+        // draw_start: values.draw_start1,
+        // draw_end: values.draw_end1,
+        // away_win_start: values.away_win_start1,
+        // away_win_end: values.away_win_end1,
       },
     ]
     return oddsInfos
@@ -305,7 +313,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   // change the select with league
   const handleLeagueChange = (league: SelectType) => {
     let { value } = league
-    setSelectedLeaueIndex(value)
+    setSelectedLeaueIndex(value as number)
   }
 
   return (
@@ -429,26 +437,50 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
           </Row>
         )}
         {is_add && (
-          <>
-            <Odds is_add={is_add} formItemLayout={formItemLayout} index={0} />
-            <Odds is_add={is_add} formItemLayout={formItemLayout} index={1} />
-          </>
+          <Form.List name="odds">
+            {(fields, { add, remove }) => {
+              return (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Odds key={key} is_add={is_add} listKey={key} name={name} remove={remove} />
+                  ))}
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      添加赔率数据
+                    </Button>
+                  </Form.Item>
+                </>
+              )
+            }}
+          </Form.List>
         )}
-        {is_update &&
-          updateData &&
-          updateData.oddsInfo &&
-          updateData.oddsInfo.map((item, index) => {
-            return (
-              <Odds
-                key={index}
-                form={form}
-                initValue={item}
-                is_add={false}
-                formItemLayout={formItemLayout}
-                index={index}
-              />
-            )
-          })}
+        {is_update && updateData.oddsInfo && (
+          <Form.List name="odds" initialValue={updateData.oddsInfo}>
+            {(fields, { add, remove }) => {
+              return (
+                <>
+                  {fields.map(({ key, name, ...restField }) => {
+                    return (
+                      <Odds
+                        key={key}
+                        form={form}
+                        is_add={false}
+                        listKey={key}
+                        name={name}
+                        remove={remove}
+                      />
+                    )
+                  })}
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      添加赔率数据
+                    </Button>
+                  </Form.Item>
+                </>
+              )
+            }}
+          </Form.List>
+        )}
         <Row>
           <Col span={12}>
             <Form.Item {...formTailLayout}>

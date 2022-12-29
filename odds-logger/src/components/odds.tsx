@@ -1,19 +1,21 @@
 import { invoke } from '@tauri-apps/api'
 import { Col, Form, FormInstance, Input, Row, Select } from 'antd'
+import { MinusCircleOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 import { DataType, OddsDataType, SelectType } from '../types/data'
 
-interface IformItemLayout {
-  labelCol: { span: number }
-  wrapperCol: { span: number }
+const formItemLayout = {
+  labelCol: { span: 4 },
+  wrapperCol: { span: 16 },
 }
 
 type FormItemLayoutProps = {
-  formItemLayout: IformItemLayout
-  index: number
   is_add: boolean
   initValue?: OddsDataType
   form?: FormInstance
+  listKey: number
+  name: number
+  remove: Function
 }
 
 const formTailLayout = {
@@ -21,26 +23,8 @@ const formTailLayout = {
   wrapperCol: { span: 6, offset: 0 },
 }
 
-function Odds({ formItemLayout, index, is_add, initValue, form }: FormItemLayoutProps) {
+function Odds({ is_add, form, listKey, name, remove }: FormItemLayoutProps) {
   const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
-
-  // set data into input field with update mode
-  useEffect(() => {
-    if (form && initValue) {
-      console.log(initValue)
-
-      form.setFieldsValue({
-        [`bookmaker${index}`]: initValue.bookmaker_name,
-        [`home_win_start${index}`]: initValue.home_win_start,
-        [`draw_start${index}`]: initValue.draw_start,
-        [`away_win_start${index}`]: initValue.away_win_start,
-        [`home_win_end${index}`]: initValue.home_win_end,
-        [`draw_end${index}`]: initValue.draw_end,
-        [`away_win_end${index}`]: initValue.away_win_end,
-        [`note${index}`]: initValue.note,
-      })
-    }
-  }, [initValue])
 
   useEffect(() => {
     const get_book_maker_list = async () => {
@@ -55,71 +39,76 @@ function Odds({ formItemLayout, index, is_add, initValue, form }: FormItemLayout
   }, [])
 
   return (
-    <>
-      <div
-        style={{
-          background: '#eee',
-          position: 'relative',
-          paddingTop: 20,
-          marginBottom: 10,
-          borderRadius: 15,
-        }}>
-        <Row>
-          <Col span={12}>
-            <Form.Item
-              {...formItemLayout}
-              name={'bookmaker' + index}
-              label="赔率公司"
-              rules={[
-                {
-                  required: is_add ? true : false,
-                  message: '请选择赔率公司',
-                },
-              ]}>
+    <div
+      key={listKey}
+      style={{
+        background: '#eee',
+        position: 'relative',
+        paddingTop: 20,
+        marginBottom: 10,
+        borderRadius: 15,
+      }}>
+      <Row>
+        <Col span={12}>
+          <Form.Item
+            {...formItemLayout}
+            name={is_add ? [name, 'bookmaker'] : [name, 'bookmaker_name']}
+            label="赔率公司"
+            rules={[
+              {
+                required: is_add ? true : false,
+                message: '请选择赔率公司',
+              },
+            ]}>
+            {is_add ? (
               <Select
                 labelInValue={true}
                 placeholder="选择赔率公司"
                 //     onChange={handleLeagueChange}
                 options={bookmakers}
               />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={8}>
-            <Form.Item {...formTailLayout} name={'home_win_start' + index} label="主胜">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item {...formTailLayout} name={'draw_start' + index} label="和">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item {...formTailLayout} name={'away_win_start' + index} label="主负">
-              <Input />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={8}>
-            <Form.Item {...formTailLayout} name={'home_win_end' + index} label="主胜(即)">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item {...formTailLayout} name={'draw_end' + index} label="和(即)">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item {...formTailLayout} name={'away_win_end' + index} label="主负(即)">
-              <Input />
-            </Form.Item>
-          </Col>
-        </Row>
-        {/* <Row>
+            ) : (
+              <Input disabled />
+            )}
+          </Form.Item>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={8}>
+          <Form.Item {...formTailLayout} name={[name, 'home_win_start']} label="主胜">
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item {...formTailLayout} name={[name, 'draw_start']} label="和">
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item {...formTailLayout} name={[name, 'away_win_start']} label="主负">
+            <Input />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={8}>
+          <Form.Item {...formTailLayout} name={[name, 'home_win_end']} label="主胜(即)">
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item {...formTailLayout} name={[name, 'draw_end']} label="和(即)">
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item {...formTailLayout} name={[name, 'away_win_end']} label="主负(即)">
+            <Input />
+          </Form.Item>
+        </Col>
+      </Row>
+      <MinusCircleOutlined onClick={() => remove(name)} />
+      {/* <Row>
           <Col span={12}>
             <Form.Item {...formButtonLayout}>
               <Button type="primary">添加</Button>
@@ -129,8 +118,7 @@ function Odds({ formItemLayout, index, is_add, initValue, form }: FormItemLayout
             </Form.Item>
           </Col>
         </Row> */}
-      </div>
-    </>
+    </div>
   )
 }
 

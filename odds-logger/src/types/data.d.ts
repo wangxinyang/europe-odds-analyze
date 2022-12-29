@@ -6,7 +6,8 @@ export type BasicDataType = {
 
 export type SelectType = {
   label: string
-  value: number
+  value?: number
+  key?: number
 }
 
 export interface DataType extends BasicDataType {
@@ -19,12 +20,12 @@ export interface OddsDataType extends BasicDataType {
   match_id: number
   bookmaker_id: number
   bookmaker_name: string
-  home_win_start: number
-  draw_start: number
-  away_win_start: number
-  home_win_end: number
-  draw_end: number
-  away_win_end: number
+  home_win_start: string
+  draw_start: string
+  away_win_start: string
+  home_win_end: string
+  draw_end: string
+  away_win_end: string
   note: number
 }
 
@@ -56,31 +57,52 @@ export interface MatchInfoTableType extends BasicDataType {
   time: string
 }
 
+// odds type
+export interface OddsBasicType {
+  id: number
+  match_id: number
+}
+
+// odds data from form
+export interface OddsType {
+  bookmaker: SelectType
+  home_win_start: string
+  home_win_end: string
+  draw_start: string
+  draw_end: string
+  away_win_start: string
+  away_win_end: string
+}
+
+// build odds data type
+export interface OddsSubmitType extends OddsBasicType {
+  bookmaker_id: number
+  bookmaker_name: string
+  home_win_start: string
+  home_win_end: string
+  draw_start: string
+  draw_end: string
+  away_win_start: string
+  away_win_end: string
+}
+
+export interface OddsUpdateDataType extends OddsSubmitType {
+  key: number
+  name: number
+  isListField: boolean
+  fieldKey: number
+}
+
 export interface MatchOddsFormType {
   leagueInfo: SelectType
   home_team: SelectType
   away_team: SelectType
   game_time: MomentInput
-  game_year: String
-  game_round: String
-  game_result: String
-  history_note: String
-  note: String
+  game_year: string
+  game_round: string
+  game_result: string
+  history_note: string
+  note: string
   match_id: number
-  // TODO: not confirmed
-  bookmaker0: SelectType
-  home_win_start0: String
-  home_win_end0: String
-  draw_start0: String
-  draw_end0: String
-  away_win_start0: String
-  away_win_end0: String
-  bookmaker1: SelectType
-  home_win_start1: String
-  home_win_end1: String
-  draw_start1: String
-  draw_end1: String
-  away_win_start1: String
-  away_win_end1: String
-  // TODO: not confirmed
+  odds: OddsType[]
 }

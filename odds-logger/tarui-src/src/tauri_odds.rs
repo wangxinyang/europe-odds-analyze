@@ -29,7 +29,7 @@ pub struct MatchesInfo {
     pub home_team_name: String,
     pub away_team_id: i32,
     pub away_team_name: String,
-    pub game_time: String,
+    pub game_time: Option<String>,
     pub game_year: Option<String>,
     pub game_round: Option<String>,
     pub game_result: Option<String>,
@@ -105,6 +105,11 @@ fn builde_match_odds_info(
     match_info: MatchesInfo,
     odds_infos: Vec<OddsInfo>,
 ) -> (Matches, Vec<Odds>) {
+    println!("game_time is: {:?}", match_info.game_time);
+    let game_time = match match_info.game_time {
+        Some(time) => NaiveDateTime::parse_from_str(time.as_str(), "%Y-%m-%d %H:%M:%S").unwrap(),
+        None => NaiveDateTime::default(),
+    };
     let m_info = MatchesBuilder::default()
         .id(match_info.id)
         .league_id(match_info.league_id)
@@ -113,10 +118,7 @@ fn builde_match_odds_info(
         .away_team_id(match_info.away_team_id)
         .home_team(match_info.home_team_name)
         .away_team(match_info.away_team_name)
-        .game_time(
-            NaiveDateTime::parse_from_str(match_info.game_time.as_str(), "%Y-%m-%d %H:%M:%S")
-                .unwrap(),
-        )
+        .game_time(game_time)
         .game_year(match_info.game_year.unwrap_or_default())
         .game_round(match_info.game_round.unwrap_or_default())
         .game_result(match_info.game_result.unwrap_or_default())
