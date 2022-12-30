@@ -137,7 +137,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       } else if (is_update && match_id) {
         // update mode
         let matchInfo = matchInfos.find((item) => item.id === parseInt(match_id))
-        console.log('wait_update is:', matchInfo)
         // query odds info by match id
         if (matchInfo) {
           let odds = await invoke<OddsDataType[]>('query_odds_by_id', { id: matchInfo.id })
@@ -151,7 +150,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
               fieldKey: index,
             })
           })
-          console.log('odds is:', odds_res)
           matchInfo.oddsInfo = odds
           setUpdateData(matchInfo)
         }
@@ -176,12 +174,14 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   const handleUpdateInfo = async () => {
     try {
       const values = await form.validateFields()
-      console.log('handleUpdateInfo Received values of form: ', values)
-      // const matchInfo = buildMatchInfoByUpdate(values)
-      // console.log('handleUpdateInfo Received values of form matchInfo: ', matchInfo)
-      // const oddsInfos = buildOddsInfoByUpdate(values)
-      // console.log('handleUpdateInfo Received values of form oddsInfos: ', oddsInfos)
-      // await invoke<number>('update_match_odds', { matchInfo, oddsInfos })
+      // if odds data was not input
+      if (values.odds === undefined) {
+        error(messageApi, 'Failed: 保存失败, 请输入赔率数据')
+        return
+      }
+      const matchInfo = buildMatchInfoByUpdate(values)
+      const oddsInfos = buildOddsInfoByUpdate(values.odds)
+      await invoke<number>('update_match_odds', { matchInfo, oddsInfos })
       success(messageApi, 'Successful: 更新成功')
     } catch (err) {
       console.log('handleUpdateInfo error is:', err)
@@ -193,7 +193,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
-      console.log('save values is:', values)
       // if odds data was not input
       if (values.odds === undefined) {
         error(messageApi, 'Failed: 保存失败, 请输入赔率数据')
@@ -268,33 +267,21 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     return oddsInfos
   }
 
-  const buildOddsInfoByUpdate = (values: MatchOddsFormType) => {
-    let oddsInfos = [
-      {
-        id: updateData.oddsInfo[0].id,
+  const buildOddsInfoByUpdate = (odds: OddsType[]) => {
+    let oddsInfos: OddsSubmitType[] = []
+    odds.map((item, index) => {
+      oddsInfos.push({
+        ...item,
+        id: item.id ? updateData.oddsInfo[index].id : 0,
         match_id: parseInt(match_id as string),
-        bookmaker_id: updateData.oddsInfo[0].bookmaker_id,
-        bookmaker_name: updateData.oddsInfo[0].bookmaker_name,
-        // home_win_start: values.home_win_start0,
-        // home_win_end: values.home_win_end0,
-        // draw_start: values.draw_start0,
-        // draw_end: values.draw_end0,
-        // away_win_start: values.away_win_start0,
-        // away_win_end: values.away_win_end0,
-      },
-      {
-        id: updateData.oddsInfo[1].id,
-        match_id: parseInt(match_id as string),
-        bookmaker_id: updateData.oddsInfo[1].bookmaker_id,
-        bookmaker_name: updateData.oddsInfo[1].bookmaker_name,
-        // home_win_start: values.home_win_start1,
-        // home_win_end: values.home_win_end1,
-        // draw_start: values.draw_start1,
-        // draw_end: values.draw_end1,
-        // away_win_start: values.away_win_start1,
-        // away_win_end: values.away_win_end1,
-      },
-    ]
+        bookmaker_id: (item.bookmaker_name as SelectType).value!
+          ? (item.bookmaker_name as SelectType).value!
+          : item.bookmaker_id,
+        bookmaker_name: (item.bookmaker_name as SelectType).label
+          ? (item.bookmaker_name as SelectType).label
+          : (item.bookmaker_name as string),
+      })
+    })
     return oddsInfos
   }
 
@@ -444,11 +431,13 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
                   {fields.map(({ key, name, ...restField }) => (
                     <Odds key={key} is_add={is_add} listKey={key} name={name} remove={remove} />
                   ))}
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                      添加赔率数据
-                    </Button>
-                  </Form.Item>
+                  <Button
+                    style={{ width: '100%', marginTop: 8, marginBottom: 18 }}
+                    type="dashed"
+                    onClick={() => add()}
+                    icon={<PlusOutlined />}>
+                    添加赔率数据
+                  </Button>
                 </>
               )
             }}
@@ -461,21 +450,16 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
                 <>
                   {fields.map(({ key, name, ...restField }) => {
                     return (
-                      <Odds
-                        key={key}
-                        form={form}
-                        is_add={false}
-                        listKey={key}
-                        name={name}
-                        remove={remove}
-                      />
+                      <Odds key={key} is_add={false} listKey={key} name={name} remove={remove} />
                     )
                   })}
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                      添加赔率数据
-                    </Button>
-                  </Form.Item>
+                  <Button
+                    style={{ width: '100%', marginTop: 8, marginBottom: 18 }}
+                    type="dashed"
+                    onClick={() => add()}
+                    icon={<PlusOutlined />}>
+                    添加赔率数据
+                  </Button>
                 </>
               )
             }}

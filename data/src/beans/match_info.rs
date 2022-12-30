@@ -16,12 +16,12 @@ pub struct MatchInfoQuery {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MatchInfo {
-    pub matches: Vec<Matches>,
+    pub matches: Matches,
     pub odds: Vec<Odds>,
 }
 
 impl MatchInfo {
-    pub fn new(matches: Vec<Matches>, odds: Vec<Odds>) -> Self {
+    pub fn new(matches: Matches, odds: Vec<Odds>) -> Self {
         Self { matches, odds }
     }
 }

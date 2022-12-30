@@ -1,10 +1,8 @@
 use async_trait::async_trait;
-use data::{
-    BookMaker, DbConfig, League, MatchInfo, MatchInfoQuery, Matches, Odds, OddsError, Team,
-};
+use data::{BookMaker, DbConfig, League, MatchInfoQuery, Matches, Odds, OddsError, Team};
 use sqlx::{postgres::PgPoolOptions, PgPool, Row};
 
-use crate::{BookMakerId, EuropeOdds, LeagueId, MatchId, OddsManager, TeamId};
+use crate::{BookMakerId, EuropeOdds, LeagueId, MatchId, OddId, OddsManager, TeamId};
 
 impl OddsManager {
     pub fn new(conn: PgPool) -> Self {
@@ -198,11 +196,7 @@ impl EuropeOdds for OddsManager {
     }
 
     /// add match data to persistence
-    async fn create_match_info(
-        &self,
-        mut matches: Matches,
-        odds: Vec<Odds>,
-    ) -> Result<MatchInfo, OddsError> {
+    async fn create_match_info(&self, mut matches: Matches) -> Result<Matches, OddsError> {
         // insert matches table
         let id: i32 = sqlx::query(
             "INSERT INTO euro.matches (league_id, league_name, home_team_id, home_team, away_team_id,
@@ -227,39 +221,13 @@ impl EuropeOdds for OddsManager {
         // set the generated id
         matches.id = id;
 
-        // insert into odds table
-        let mut result_odds: Vec<Odds> = Vec::new();
-        for mut odd in odds.into_iter() {
-            let id = sqlx::query(
-                "INSERT INTO euro.odds (match_id, bookmaker_id, bookmaker_name, home_win_start, draw_start, away_win_start,
-                    home_win_end, draw_end, away_win_end, note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                    RETURNING id",
-            )
-            .bind(id)
-            .bind(odd.bookmaker_id)
-            .bind(&odd.bookmaker_name)
-            .bind(&odd.home_win_start)
-            .bind(&odd.draw_start)
-            .bind(&odd.away_win_start)
-            .bind(&odd.home_win_end)
-            .bind(&odd.draw_end)
-            .bind(&odd.away_win_end)
-            .bind(&odd.note)
-            .fetch_one(&self.conn)
-            .await?
-            .get(0);
-
-            odd.id = id;
-            result_odds.push(odd);
-        }
-
-        Ok(MatchInfo::new(vec![matches], result_odds))
+        Ok(matches)
     }
 
     /// update match data to persistence
-    async fn update_match_info(&self, matches: Matches, odds: Vec<Odds>) -> Result<(), OddsError> {
+    async fn update_match_info(&self, matches: Matches) -> Result<Matches, OddsError> {
         // update matches table
-        sqlx::query_as::<_, Matches>(
+        let matches = sqlx::query_as::<_, Matches>(
             "UPDATE euro.matches SET league_id = $1,
         home_team_id = $2, home_team = $3, away_team_id = $4, away_team = $5, game_time = $6,
         game_result = $7, note = $8, game_year = $9, game_round = $10,
@@ -280,28 +248,8 @@ impl EuropeOdds for OddsManager {
         .bind(matches.id)
         .fetch_one(&self.conn)
         .await?;
-        for odd in odds.clone().into_iter() {
-            sqlx::query_as::<_, Odds>(
-                "UPDATE euro.odds SET bookmaker_id = $1, home_win_start = $2, draw_start = $3,
-             away_win_start = $4, home_win_end = $5, draw_end = $6, away_win_end = $7, note = $8,
-             bookmaker_name= $9 WHERE match_id = $10 and id = $11 RETURNING *",
-            )
-            .bind(odd.bookmaker_id)
-            .bind(odd.home_win_start)
-            .bind(odd.draw_start)
-            .bind(odd.away_win_start)
-            .bind(odd.home_win_end)
-            .bind(odd.draw_end)
-            .bind(odd.away_win_end)
-            .bind(&odd.note)
-            .bind(&odd.bookmaker_name)
-            .bind(odd.match_id)
-            .bind(odd.id)
-            .fetch_one(&self.conn)
-            .await?;
-        }
 
-        Ok(())
+        Ok(matches)
     }
 
     /// delete match data from persistence
@@ -328,7 +276,6 @@ impl EuropeOdds for OddsManager {
                 .bind(query.page_size)
                 .fetch_all(&self.conn)
                 .await?;
-        // Ok(MatchInfo::new(match_infos, vec![]))
         Ok(match_infos)
     }
 
@@ -338,8 +285,65 @@ impl EuropeOdds for OddsManager {
             .bind(id)
             .fetch_all(&self.conn)
             .await?;
-        // Ok(MatchInfo::new(match_infos, vec![]))
         Ok(odds_infos)
+    }
+
+    /// add match data to persistence
+    async fn create_odd_info(&self, id: MatchId, mut odd: Odds) -> Result<Odds, OddsError> {
+        // insert into odds table
+        let id = sqlx::query("INSERT INTO euro.odds (match_id, bookmaker_id, bookmaker_name,
+                home_win_start, draw_start, away_win_start,home_win_end, draw_end, away_win_end, note)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id")
+                    .bind(id)
+                    .bind(odd.bookmaker_id)
+                    .bind(&odd.bookmaker_name)
+                    .bind(&odd.home_win_start)
+                    .bind(&odd.draw_start)
+                    .bind(&odd.away_win_start)
+                    .bind(&odd.home_win_end)
+                    .bind(&odd.draw_end)
+                    .bind(&odd.away_win_end)
+                    .bind(&odd.note)
+                    .fetch_one(&self.conn)
+                    .await?
+                    .get(0);
+
+        odd.id = id;
+        Ok(odd)
+    }
+
+    /// update match data to persistence
+    async fn update_odd_info(&self, odd: Odds) -> Result<Odds, OddsError> {
+        let odd_info = sqlx::query_as::<_, Odds>(
+            "UPDATE euro.odds SET bookmaker_id = $1, home_win_start = $2, draw_start = $3,
+             away_win_start = $4, home_win_end = $5, draw_end = $6, away_win_end = $7, note = $8,
+             bookmaker_name= $9 WHERE match_id = $10 and id = $11 RETURNING *",
+        )
+        .bind(odd.bookmaker_id)
+        .bind(odd.home_win_start)
+        .bind(odd.draw_start)
+        .bind(odd.away_win_start)
+        .bind(odd.home_win_end)
+        .bind(odd.draw_end)
+        .bind(odd.away_win_end)
+        .bind(&odd.note)
+        .bind(&odd.bookmaker_name)
+        .bind(odd.match_id)
+        .bind(odd.id)
+        .fetch_one(&self.conn)
+        .await?;
+
+        Ok(odd_info)
+    }
+
+    /// delete match data from persistence
+    async fn delete_odds_info(&self, id: OddId) -> Result<i32, OddsError> {
+        let count = sqlx::query("DELETE FROM euro.odds WHERE id = $1")
+            .bind(id)
+            .execute(&self.conn)
+            .await?;
+
+        Ok(count.rows_affected() as i32)
     }
 }
 
@@ -347,7 +351,7 @@ impl EuropeOdds for OddsManager {
 mod tests {
 
     use chrono::NaiveDateTime;
-    use data::{BookMakerBuilder, LeagueBuilder, MatchesBuilder, OddsBuilder, TeamBuilder};
+    use data::{BookMakerBuilder, LeagueBuilder, MatchesBuilder, TeamBuilder};
 
     use crate::test_util::TestConfig;
 
@@ -557,32 +561,31 @@ mod tests {
             .game_year("2022")
             .build()
             .unwrap();
-        let odd_1 = OddsBuilder::default()
-            .bookmaker_id(1)
-            .home_win_start_setter("1.2")
-            .draw_start_setter("2.3")
-            .away_win_start_setter("3.4")
-            .home_win_end_setter("1.5")
-            .draw_end_setter("2.6")
-            .away_win_end_setter("3.7")
-            .build()
-            .unwrap();
-        let odd_2 = OddsBuilder::default()
-            .bookmaker_id(2)
-            .home_win_start_setter("1.4")
-            .draw_start_setter("2.25")
-            .away_win_start_setter("3.45")
-            .home_win_end_setter("1.62")
-            .draw_end_setter("2.65")
-            .away_win_end_setter("3.72")
-            .build()
-            .unwrap();
-        let odds = vec![odd_1, odd_2];
+        // let odd_1 = OddsBuilder::default()
+        //     .bookmaker_id(1)
+        //     .home_win_start_setter("1.2")
+        //     .draw_start_setter("2.3")
+        //     .away_win_start_setter("3.4")
+        //     .home_win_end_setter("1.5")
+        //     .draw_end_setter("2.6")
+        //     .away_win_end_setter("3.7")
+        //     .build()
+        //     .unwrap();
+        // let odd_2 = OddsBuilder::default()
+        //     .bookmaker_id(2)
+        //     .home_win_start_setter("1.4")
+        //     .draw_start_setter("2.25")
+        //     .away_win_start_setter("3.45")
+        //     .home_win_end_setter("1.62")
+        //     .draw_end_setter("2.65")
+        //     .away_win_end_setter("3.72")
+        //     .build()
+        //     .unwrap();
+        // let odds = vec![odd_1, odd_2];
 
         // add match info
-        let match_info = odds_manager.create_match_info(matches, odds).await.unwrap();
-        assert!(match_info.matches[0].id != 0);
-        assert_eq!(match_info.odds.len(), 2);
+        let match_info = odds_manager.create_match_info(matches).await.unwrap();
+        assert!(match_info.id != 0);
     }
 
     #[tokio::test]
@@ -601,41 +604,34 @@ mod tests {
             .game_result("2:1")
             .build()
             .unwrap();
-        let odd_1 = OddsBuilder::default()
-            .bookmaker_id(1)
-            .home_win_start_setter("1.2")
-            .draw_start_setter("2.3")
-            .away_win_start_setter("3.4")
-            .home_win_end_setter("1.5")
-            .draw_end_setter("2.6")
-            .away_win_end_setter("3.7")
-            .build()
-            .unwrap();
-        let odd_2 = OddsBuilder::default()
-            .bookmaker_id(2)
-            .home_win_start_setter("1.4")
-            .draw_start_setter("2.25")
-            .away_win_start_setter("3.45")
-            .home_win_end_setter("1.62")
-            .draw_end_setter("2.65")
-            .away_win_end_setter("3.72")
-            .build()
-            .unwrap();
-        let odds = vec![odd_1, odd_2];
-        let mut match_info = odds_manager.create_match_info(matches, odds).await.unwrap();
+        // let odd_1 = OddsBuilder::default()
+        //     .bookmaker_id(1)
+        //     .home_win_start_setter("1.2")
+        //     .draw_start_setter("2.3")
+        //     .away_win_start_setter("3.4")
+        //     .home_win_end_setter("1.5")
+        //     .draw_end_setter("2.6")
+        //     .away_win_end_setter("3.7")
+        //     .build()
+        //     .unwrap();
+        // let odd_2 = OddsBuilder::default()
+        //     .bookmaker_id(2)
+        //     .home_win_start_setter("1.4")
+        //     .draw_start_setter("2.25")
+        //     .away_win_start_setter("3.45")
+        //     .home_win_end_setter("1.62")
+        //     .draw_end_setter("2.65")
+        //     .away_win_end_setter("3.72")
+        //     .build()
+        //     .unwrap();
+        // let odds = vec![odd_1, odd_2];
+        let mut match_info = odds_manager.create_match_info(matches).await.unwrap();
         // update match info
-        match_info.matches[0].game_result = Some("1:1".into());
-        match_info.odds[0].match_id = match_info.matches[0].id;
-        match_info.odds[1].match_id = match_info.matches[0].id;
-        match_info.odds[0].home_win_start = "3.01".parse().unwrap();
-        match_info.odds[1].home_win_start = "4.05".parse().unwrap();
-        odds_manager
-            .update_match_info(match_info.matches[0].clone(), match_info.odds.clone())
-            .await
-            .unwrap();
-        assert_eq!(match_info.matches[0].clone().game_result.unwrap(), "1:1");
-        assert_eq!(match_info.odds[0].home_win_start, "3.01".parse().unwrap());
-        assert_eq!(match_info.odds[1].home_win_start, "4.05".parse().unwrap());
+        match_info.game_result = Some("1:1".into());
+        let update_match = odds_manager.update_match_info(match_info).await.unwrap();
+        assert_eq!(update_match.game_result.unwrap(), "1:1");
+        // assert_eq!(match_info.odds[0].home_win_start, "3.01".parse().unwrap());
+        // assert_eq!(match_info.odds[1].home_win_start, "4.05".parse().unwrap());
     }
 
     #[tokio::test]
@@ -654,34 +650,31 @@ mod tests {
             .game_result("2:1")
             .build()
             .unwrap();
-        let odd_1 = OddsBuilder::default()
-            .bookmaker_id(1)
-            .home_win_start_setter("1.2")
-            .draw_start_setter("2.3")
-            .away_win_start_setter("3.4")
-            .home_win_end_setter("1.5")
-            .draw_end_setter("2.6")
-            .away_win_end_setter("3.7")
-            .build()
-            .unwrap();
-        let odd_2 = OddsBuilder::default()
-            .bookmaker_id(2)
-            .home_win_start_setter("1.4")
-            .draw_start_setter("2.25")
-            .away_win_start_setter("3.45")
-            .home_win_end_setter("1.62")
-            .draw_end_setter("2.65")
-            .away_win_end_setter("3.72")
-            .build()
-            .unwrap();
-        let odds = vec![odd_1, odd_2];
-        let match_info = odds_manager.create_match_info(matches, odds).await.unwrap();
+        // let odd_1 = OddsBuilder::default()
+        //     .bookmaker_id(1)
+        //     .home_win_start_setter("1.2")
+        //     .draw_start_setter("2.3")
+        //     .away_win_start_setter("3.4")
+        //     .home_win_end_setter("1.5")
+        //     .draw_end_setter("2.6")
+        //     .away_win_end_setter("3.7")
+        //     .build()
+        //     .unwrap();
+        // let odd_2 = OddsBuilder::default()
+        //     .bookmaker_id(2)
+        //     .home_win_start_setter("1.4")
+        //     .draw_start_setter("2.25")
+        //     .away_win_start_setter("3.45")
+        //     .home_win_end_setter("1.62")
+        //     .draw_end_setter("2.65")
+        //     .away_win_end_setter("3.72")
+        //     .build()
+        //     .unwrap();
+        // let odds = vec![odd_1, odd_2];
+        let match_info = odds_manager.create_match_info(matches).await.unwrap();
 
         // delete match info
-        let delete_count = odds_manager
-            .delete_match_info(match_info.matches[0].id)
-            .await
-            .unwrap();
+        let delete_count = odds_manager.delete_match_info(match_info.id).await.unwrap();
 
         assert_eq!(1, delete_count);
     }

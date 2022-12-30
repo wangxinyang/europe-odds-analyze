@@ -65,7 +65,10 @@ export interface OddsBasicType {
 
 // odds data from form
 export interface OddsType {
+  id: number
   bookmaker: SelectType
+  bookmaker_id: number
+  bookmaker_name: SelectType | string
   home_win_start: string
   home_win_end: string
   draw_start: string

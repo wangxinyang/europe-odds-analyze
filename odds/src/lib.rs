@@ -5,13 +5,14 @@ pub use manager::*;
 pub use test_util::*;
 
 use async_trait::async_trait;
-use data::{BookMaker, League, MatchInfo, MatchInfoQuery, Matches, Odds, OddsError, Team};
+use data::{BookMaker, League, MatchInfoQuery, Matches, Odds, OddsError, Team};
 use sqlx::PgPool;
 
 type BookMakerId = i32;
 type LeagueId = i32;
 type TeamId = i32;
 type MatchId = i32;
+type OddId = i32;
 
 #[async_trait]
 pub trait EuropeOdds {
@@ -61,17 +62,22 @@ pub trait EuropeOdds {
     async fn query_odds_info_by_id(&self, id: i32) -> Result<Vec<Odds>, OddsError>;
 
     /// add match data to persistence
-    async fn create_match_info(
-        &self,
-        matches: Matches,
-        odds: Vec<Odds>,
-    ) -> Result<MatchInfo, OddsError>;
+    async fn create_match_info(&self, matches: Matches) -> Result<Matches, OddsError>;
 
     /// update match data to persistence
-    async fn update_match_info(&self, matches: Matches, odds: Vec<Odds>) -> Result<(), OddsError>;
+    async fn update_match_info(&self, matches: Matches) -> Result<Matches, OddsError>;
 
     /// delete match data from persistence
     async fn delete_match_info(&self, id: MatchId) -> Result<i32, OddsError>;
+
+    /// add match data to persistence
+    async fn create_odd_info(&self, id: MatchId, odds: Odds) -> Result<Odds, OddsError>;
+
+    /// update match data to persistence
+    async fn update_odd_info(&self, odds: Odds) -> Result<Odds, OddsError>;
+
+    /// delete match data from persistence
+    async fn delete_odds_info(&self, id: OddId) -> Result<i32, OddsError>;
 }
 
 pub struct OddsManager {

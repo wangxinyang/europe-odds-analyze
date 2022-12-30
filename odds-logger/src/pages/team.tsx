@@ -84,8 +84,6 @@ function Team() {
     // clear data
     setData([])
     lists.map((item, index) => {
-      console.log(item)
-
       let data = { ...item, key: index.toString(), index: index + 1 }
       setData((prev) => [...prev, data])
     })
@@ -147,14 +145,6 @@ function Team() {
     }
   }
 
-  const onChange = (value: string) => {
-    console.log(`selected ${value}`)
-  }
-
-  const onSearch = (value: string) => {
-    console.log('search:', value)
-  }
-
   const options = (data: LeagueDataType[]) => {
     let options: { label: string; value: number }[] = []
     data.map((item) => {
@@ -184,8 +174,6 @@ function Team() {
             showSearch
             placeholder="选择联赛"
             optionFilterProp="children"
-            onChange={onChange}
-            onSearch={onSearch}
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }

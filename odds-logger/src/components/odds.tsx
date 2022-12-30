@@ -1,8 +1,8 @@
 import { invoke } from '@tauri-apps/api'
-import { Col, Form, FormInstance, Input, Row, Select } from 'antd'
+import { Col, Form, Input, Row, Select } from 'antd'
 import { MinusCircleOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
-import { DataType, OddsDataType, SelectType } from '../types/data'
+import { DataType, SelectType } from '../types/data'
 
 const formItemLayout = {
   labelCol: { span: 4 },
@@ -11,8 +11,6 @@ const formItemLayout = {
 
 type FormItemLayoutProps = {
   is_add: boolean
-  initValue?: OddsDataType
-  form?: FormInstance
   listKey: number
   name: number
   remove: Function
@@ -23,7 +21,7 @@ const formTailLayout = {
   wrapperCol: { span: 6, offset: 0 },
 }
 
-function Odds({ is_add, form, listKey, name, remove }: FormItemLayoutProps) {
+function Odds({ is_add, listKey, name, remove }: FormItemLayoutProps) {
   const [bookmakers, setBokkmakers] = useState<SelectType[]>([])
 
   useEffect(() => {
@@ -60,16 +58,12 @@ function Odds({ is_add, form, listKey, name, remove }: FormItemLayoutProps) {
                 message: '请选择赔率公司',
               },
             ]}>
-            {is_add ? (
-              <Select
-                labelInValue={true}
-                placeholder="选择赔率公司"
-                //     onChange={handleLeagueChange}
-                options={bookmakers}
-              />
-            ) : (
-              <Input disabled />
-            )}
+            <Select
+              labelInValue={true}
+              placeholder="选择赔率公司"
+              //     onChange={handleLeagueChange}
+              options={bookmakers}
+            />
           </Form.Item>
         </Col>
       </Row>
@@ -107,17 +101,10 @@ function Odds({ is_add, form, listKey, name, remove }: FormItemLayoutProps) {
           </Form.Item>
         </Col>
       </Row>
-      <MinusCircleOutlined onClick={() => remove(name)} />
-      {/* <Row>
-          <Col span={12}>
-            <Form.Item {...formButtonLayout}>
-              <Button type="primary">添加</Button>
-              <Button type="primary" danger>
-                删除
-              </Button>
-            </Form.Item>
-          </Col>
-        </Row> */}
+      <MinusCircleOutlined
+        style={{ position: 'absolute', right: 10, top: 10 }}
+        onClick={() => remove(name)}
+      />
     </div>
   )
 }
