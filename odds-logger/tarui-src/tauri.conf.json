@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "odds-recoder",
+    "productName": "Recoder-O",
     "version": "../package.json"
   },
   "tauri": {
@@ -57,7 +57,7 @@
         "fullscreen": false,
         "height": 1000,
         "resizable": true,
-        "title": "odds-recoder",
+        "title": "Recoder-O",
         "width": 1400
       }
     ]
