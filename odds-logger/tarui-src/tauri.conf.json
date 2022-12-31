@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "odds-backend",
-    "version": "0.1.0"
+    "productName": "odds-recoder",
+    "version": "../package.json"
   },
   "tauri": {
     "allowlist": {
@@ -57,7 +57,7 @@
         "fullscreen": false,
         "height": 1000,
         "resizable": true,
-        "title": "odds-logger",
+        "title": "odds-recoder",
         "width": 1400
       }
     ]
