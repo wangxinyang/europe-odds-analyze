@@ -9,7 +9,6 @@ a tool of record european odds for predict the result of soccer games
 ![team](./capature/team.png)
 ![odds](./capature/odds1.png)
 ![odds2](./capature/odds2.png)
-![odds3](./capature/odds3.png)
 
 ## Stack
 
