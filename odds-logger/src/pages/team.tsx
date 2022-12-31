@@ -1,4 +1,4 @@
-import { Button, Form, Input, message, Popconfirm, Select, Table } from 'antd'
+import { Button, Form, Input, message, Popconfirm, Select, Space, Table } from 'antd'
 import { useEffect, useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
@@ -196,12 +196,14 @@ function Team() {
           <Input />
         </Form.Item>
         <Form.Item {...formTailLayout}>
-          <Button type="primary" onClick={handleSearchInfo}>
-            查询
-          </Button>
-          <Button type="primary" onClick={handleSaveInfo}>
-            保存
-          </Button>
+          <Space size={8}>
+            <Button type="primary" onClick={handleSearchInfo}>
+              查询
+            </Button>
+            <Button type="primary" danger onClick={handleSaveInfo}>
+              保存
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
       <Table columns={columns} dataSource={data} />

@@ -1,13 +1,33 @@
 ![](https://github.com/wangxinyang/europe-odds-analyze/workflows/build/badge.svg)
 
-# europe-odds-analyze
+# Rcorder-O
 
-a tool of logging european odds for predict the result of soccer games
+a tool of record european odds for predict the result of soccer games
+
+![bookmaker](./capature/bookmaker.png)
+![league](./capature/league.png)
+![team](./capature/team.png)
+![odds](./capature/odds1.png)
+![odds2](./capature/odds2.png)
+![odds3](./capature/odds3.png)
+
+## Stack
+
+1. Tauri for UI
+2. Rust for serives and db handle
+3. antd for UI style and components
 
 ## How to use it
 
 ```bash
+-- develop
 
+cd odds-logger
+
+cargo tauri dev
+
+
+-- product
 ```
 
 Have fun with this crate!

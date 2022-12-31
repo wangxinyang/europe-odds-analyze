@@ -129,12 +129,14 @@ function League() {
           <Input />
         </Form.Item>
         <Form.Item {...formTailLayout}>
-          <Button type="primary" onClick={handleSearchInfo}>
-            查询
-          </Button>
-          <Button type="primary" onClick={handleSaveInfo}>
-            保存
-          </Button>
+          <Space size={8}>
+            <Button type="primary" onClick={handleSearchInfo}>
+              查询
+            </Button>
+            <Button type="primary" danger onClick={handleSaveInfo}>
+              保存
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
       <Table columns={columns} dataSource={data} pagination={false} />
