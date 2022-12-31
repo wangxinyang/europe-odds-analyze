@@ -13,7 +13,7 @@ a tool of record european odds for predict the result of soccer games
 
 ## Stack
 
-1. Tauri for UI
+1. Tauri for build desktop app
 2. Rust for serives and db handle
 3. antd for UI style and components
 
