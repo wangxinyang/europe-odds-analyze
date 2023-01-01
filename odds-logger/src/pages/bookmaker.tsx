@@ -149,7 +149,7 @@ function BookMaker() {
           </Space>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table columns={columns} dataSource={data} />
     </>
   )
 }

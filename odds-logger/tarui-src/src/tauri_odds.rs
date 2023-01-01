@@ -91,8 +91,18 @@ pub async fn query_odds_by_id(
     id: i32,
 ) -> Result<Vec<Odds>, OddsError> {
     let manager = &*manager;
-    let odds = manager.query_odds_info_by_id(id).await?;
-    Ok(odds)
+    let mut odds = manager.query_odds_info_by_id(id).await?;
+    let mut new_result = vec![];
+    for odd in odds.iter_mut() {
+        odd.home_win_start = odd.home_win_start.with_prec(3);
+        odd.home_win_end = odd.home_win_end.with_prec(3);
+        odd.draw_start = odd.draw_start.with_prec(3);
+        odd.draw_end = odd.draw_end.with_prec(3);
+        odd.away_win_start = odd.away_win_start.with_prec(3);
+        odd.away_win_end = odd.away_win_end.with_prec(3);
+        new_result.push(odd.clone());
+    }
+    Ok(new_result)
 }
 
 // Result<Vec<MatchInfo>, OddsError>

@@ -9,6 +9,7 @@ a tool of record european odds for predict the result of soccer games
 ![team](./capature/team.png)
 ![odds](./capature/odds1.png)
 ![odds2](./capature/odds2.png)
+![update](./capature/update.png)
 
 ## Stack
 
@@ -26,7 +27,10 @@ cd odds-logger
 cargo tauri dev
 
 
--- product
+-- build
+cd odds-logger
+
+cargo tauri build
 ```
 
 Have fun with this crate!

@@ -16,6 +16,7 @@ import {
   OddsUpdateDataType,
   SelectType,
 } from '../types/data'
+import TextArea from 'antd/es/input/TextArea'
 
 const formItemLayout = {
   labelCol: { span: 4 },
@@ -418,7 +419,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
           <Row>
             <Col span={12}>
               <Form.Item {...formItemLayout} name="note" label="备注">
-                <Input />
+                <TextArea rows={3} placeholder="赔率记忆备注" />
               </Form.Item>
             </Col>
           </Row>

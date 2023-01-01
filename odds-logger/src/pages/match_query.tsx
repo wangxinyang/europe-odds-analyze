@@ -59,11 +59,6 @@ function MatchQuery() {
       key: 'time',
     },
     {
-      title: '备注',
-      key: 'note',
-      dataIndex: 'note',
-    },
-    {
       title: '操作',
       key: 'action',
       render: (_, record, _index) => {
