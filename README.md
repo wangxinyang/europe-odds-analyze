@@ -20,6 +20,15 @@ a tool of record european odds for predict the result of soccer games
 ## How to use it
 
 1. run the migrations file to build postgresql
+
+```bash
+-- if use the sqlx
+sqlx migrate run
+
+-- revert
+sqlx migrate revert
+```
+
 2. run the command with the below
 
 ```bash
