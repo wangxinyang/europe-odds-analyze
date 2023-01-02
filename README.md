@@ -24,14 +24,10 @@ a tool of record european odds for predict the result of soccer games
 
 ```bash
 -- develop
-
 cargo tauri dev
 
 
 -- build
-cd odds-logger
-yarn && yarn build
-
 cargo tauri build
 ```
 
