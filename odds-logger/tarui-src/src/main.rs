@@ -25,9 +25,6 @@ use odds::OddsManager;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    let config = Config::from_file("./fixtures/config.yml")?;
-    let odds_manager = block_on(OddsManager::from_config(&config.db))?;
-
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             get_book_maker_lists,
@@ -50,6 +47,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             update_match_odds,
         ])
         .setup(|app| {
+            // Embedding Additional Files with the resource parameter of tauri.conf.json
+            let resource_path = app
+                .path_resolver()
+                .resolve_resource("fixtures/db/config.yml")
+                .expect("failed to resolve resource");
+            let file = std::fs::File::open(&resource_path).unwrap();
+            let config = Config::from_file(file)?;
+            let odds_manager = block_on(OddsManager::from_config(&config.db))?;
             app.manage(odds_manager);
             Ok(())
         })

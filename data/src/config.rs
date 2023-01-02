@@ -1,5 +1,3 @@
-use std::{fs, path::Path};
-
 use serde::{Deserialize, Serialize};
 
 use crate::OddsError;
@@ -25,9 +23,9 @@ fn default_max_connections() -> u32 {
 }
 
 impl Config {
-    pub fn from_file(path: impl AsRef<Path>) -> Result<Self, OddsError> {
-        let content = fs::read_to_string(path).map_err(|_| OddsError::ConfigReadError)?;
-        let config = serde_yaml::from_str(&content).map_err(|_| OddsError::ConfigParseError)?;
+    pub fn from_file(path: std::fs::File) -> Result<Self, OddsError> {
+        // let content = fs::read_to_string(path).map_err(|_| OddsError::ConfigReadError)?;
+        let config = serde_yaml::from_reader(path).map_err(|_| OddsError::ConfigParseError)?;
         Ok(config)
     }
 }
@@ -55,7 +53,8 @@ mod tests {
 
     #[test]
     fn config_should_be_loaded() {
-        let config = Config::from_file("../odds-logger/tarui-src/fixtures/config.yml").unwrap();
+        let file = std::fs::File::open("../odds-logger/tarui-src/fixtures/db/config.yml").unwrap();
+        let config = Config::from_file(file).unwrap();
         assert_eq!(
             config,
             Config {

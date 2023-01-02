@@ -19,16 +19,18 @@ a tool of record european odds for predict the result of soccer games
 
 ## How to use it
 
+1. run the migrations file to build postgresql
+2. run the command with the below
+
 ```bash
 -- develop
-
-cd odds-logger
 
 cargo tauri dev
 
 
 -- build
 cd odds-logger
+yarn && yarn build
 
 cargo tauri build
 ```
