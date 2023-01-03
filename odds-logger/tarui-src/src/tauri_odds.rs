@@ -33,6 +33,7 @@ pub struct MatchesInfo {
     pub game_year: Option<String>,
     pub game_round: Option<String>,
     pub game_result: Option<String>,
+    pub predict_game_result: Option<String>,
     pub history_note: Option<String>,
     pub note: Option<String>,
 }
@@ -162,6 +163,7 @@ fn builde_match_odds_info(
         .game_year(match_info.game_year.unwrap_or_default())
         .game_round(match_info.game_round.unwrap_or_default())
         .game_result(match_info.game_result.unwrap_or_default())
+        .predict_game_result(match_info.predict_game_result.unwrap_or_default())
         .history_note(match_info.history_note.unwrap_or_default())
         .note(match_info.note.unwrap_or_default())
         .build()

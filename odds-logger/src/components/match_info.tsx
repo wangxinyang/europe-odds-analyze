@@ -112,6 +112,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       home_team: updateData.home_team,
       away_team: updateData.away_team,
       game_result: updateData.game_result,
+      predict_game_result: updateData.predict_game_result,
       game_time: updateData.game_time ? dayjs(updateData.game_time, 'YYYY/MM/DD HH:mm:ss') : '',
       note: updateData.note,
     })
@@ -175,6 +176,8 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
   const handleUpdateInfo = async () => {
     try {
       const values = await form.validateFields()
+      console.log(values)
+
       // if odds data was not input
       if (values.odds === undefined) {
         error(messageApi, 'Failed: 保存失败, 请输入赔率数据')
@@ -227,6 +230,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       game_year: values.game_year,
       game_round: values.game_round,
       game_result: values.game_result,
+      predict_game_result: values.predict_game_result,
       history_note: values.history_note,
       note: values.note,
     }
@@ -248,6 +252,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       game_year: values.game_year,
       game_round: values.game_round,
       game_result: values.game_result,
+      predict_game_result: values.predict_game_result,
       history_note: values.history_note,
       note: values.note,
     }
@@ -374,12 +379,11 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
               <Select labelInValue={true} placeholder="选择球队" options={teamDataWithLeague} />
             </Form.Item>
           </Col>
-
           {(is_add || is_update) && (
             <Col span={12}>
-              <Form.Item {...formItemLayout} name="game_result" label="比赛结果">
+              <Form.Item {...formItemLayout} name="predict_game_result" label="预测结果">
                 <Select
-                  placeholder="选择比赛结果"
+                  placeholder="预测比赛结果"
                   options={[
                     { value: '3', label: '主胜' },
                     { value: '1', label: '平' },
@@ -409,8 +413,15 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
           )}
           {(is_add || is_update) && (
             <Col span={12}>
-              <Form.Item name="game_time" label="比赛时间">
-                <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="选择比赛时间" />
+              <Form.Item {...formItemLayout} name="game_result" label="比赛结果">
+                <Select
+                  placeholder="选择比赛结果"
+                  options={[
+                    { value: '3', label: '主胜' },
+                    { value: '1', label: '平' },
+                    { value: '0', label: '主负' },
+                  ]}
+                />
               </Form.Item>
             </Col>
           )}
@@ -422,6 +433,13 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
                 <TextArea rows={3} placeholder="赔率记忆备注" />
               </Form.Item>
             </Col>
+            {(is_add || is_update) && (
+              <Col span={12}>
+                <Form.Item name="game_time" label="比赛时间">
+                  <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="选择比赛时间" />
+                </Form.Item>
+              </Col>
+            )}
           </Row>
         )}
         {is_add && (

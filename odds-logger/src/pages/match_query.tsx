@@ -40,7 +40,23 @@ function MatchQuery() {
       key: 'vs',
     },
     {
-      title: '结果',
+      title: '预测结果',
+      dataIndex: 'predict_result',
+      key: 'predict_result',
+      render: (result) => {
+        if (result === '3') {
+          return '主胜'
+        } else if (result === '1') {
+          return '平局'
+        } else if (result === '0') {
+          return '主负'
+        } else {
+          return ''
+        }
+      },
+    },
+    {
+      title: '实际结果',
       dataIndex: 'result',
       key: 'result',
       render: (result) => {
@@ -48,8 +64,10 @@ function MatchQuery() {
           return '主胜'
         } else if (result === '1') {
           return '平局'
-        } else {
+        } else if (result === '0') {
           return '主负'
+        } else {
+          return ''
         }
       },
     },
@@ -104,6 +122,7 @@ function MatchQuery() {
         year: item.game_year,
         round: item.game_round,
         result: item.game_result,
+        predict_result: item.predict_game_result,
         time: dayjs(item.game_time).format('YYYY/MM/DD HH:mm:ss'),
         note: item.note,
       })

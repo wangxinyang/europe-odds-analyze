@@ -16,10 +16,11 @@ a tool of record european odds for predict the result of soccer games
 1. Tauri for build desktop app
 2. Rust for serives and db handle
 3. antd for UI style and components
+4. sqlx for DB connection
 
 ## How to use it
 
-1. run the migrations file to build postgresql
+1. run the migrations file to build postgresql db
 
 ```bash
 -- if use the sqlx

@@ -40,6 +40,7 @@ export interface MatchInfoDataType extends BasicDataType {
   game_time: string
   game_round: string
   game_result: string
+  predict_game_result: string
   game_year: string
   history_note: string
   note: string
@@ -51,6 +52,7 @@ export interface MatchInfoTableType extends BasicDataType {
   league_name: string
   vs: string
   result: string
+  predict_result: string
   year: string
   round: string
   note: string
@@ -104,6 +106,7 @@ export interface MatchOddsFormType {
   game_year: string
   game_round: string
   game_result: string
+  predict_game_result: string
   history_note: string
   note: string
   match_id: number

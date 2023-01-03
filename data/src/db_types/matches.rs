@@ -28,6 +28,8 @@ pub struct Matches {
     #[builder(default, setter(into, strip_option))]
     pub game_result: Option<String>,
     #[builder(default, setter(into, strip_option))]
+    pub predict_game_result: Option<String>,
+    #[builder(default, setter(into, strip_option))]
     pub history_note: Option<String>,
     #[builder(default, setter(into, strip_option))]
     pub note: Option<String>,

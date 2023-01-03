@@ -200,8 +200,8 @@ impl EuropeOdds for OddsManager {
         // insert matches table
         let id: i32 = sqlx::query(
             "INSERT INTO euro.matches (league_id, league_name, home_team_id, home_team, away_team_id,
-                away_team, game_time, game_year, game_round, game_result, history_note, note)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
+                away_team, game_time, game_year, game_round, game_result, history_note, note, predict_game_result)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id",
         )
         .bind(matches.league_id)
         .bind(&matches.league_name)
@@ -215,6 +215,7 @@ impl EuropeOdds for OddsManager {
         .bind(&matches.game_result)
         .bind(&matches.history_note)
         .bind(&matches.note)
+        .bind(&matches.predict_game_result)
         .fetch_one(&self.conn)
         .await?
         .get(0);
@@ -231,7 +232,7 @@ impl EuropeOdds for OddsManager {
             "UPDATE euro.matches SET league_id = $1,
         home_team_id = $2, home_team = $3, away_team_id = $4, away_team = $5, game_time = $6,
         game_result = $7, note = $8, game_year = $9, game_round = $10,
-        league_name = $11, history_note = $12 WHERE id = $13 RETURNING *",
+        league_name = $11, history_note = $12, predict_game_result = $13 WHERE id = $14 RETURNING *",
         )
         .bind(matches.league_id)
         .bind(matches.home_team_id)
@@ -245,6 +246,7 @@ impl EuropeOdds for OddsManager {
         .bind(&matches.game_round)
         .bind(&matches.league_name)
         .bind(&matches.history_note)
+        .bind(&matches.predict_game_result)
         .bind(matches.id)
         .fetch_one(&self.conn)
         .await?;
