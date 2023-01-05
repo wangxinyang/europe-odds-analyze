@@ -130,6 +130,20 @@ function MatchQuery() {
     setTableData(result)
   }
 
+  const getRowClassName = (record: MatchInfoTableType, index: number) => {
+    console.log('record is', record)
+
+    let className = ''
+    if (record.result !== '') {
+      if (record.result !== record.predict_result) {
+        className = 'error_predict'
+      } else {
+        className = 'correct_predict'
+      }
+    }
+    return className
+  }
+
   return (
     <>
       {contextHolder}
@@ -139,7 +153,7 @@ function MatchQuery() {
         messageApi={messageApi}
         handleValue={getMatchInfoTableData}
       />
-      <Table columns={columns} dataSource={tableData} />
+      <Table columns={columns} dataSource={tableData} rowClassName={getRowClassName} />
     </>
   )
 }

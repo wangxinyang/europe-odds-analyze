@@ -11,3 +11,11 @@ html {
   width: 100%;
   min-height: 100%;
 }
+
+.error_predict {
+  background: #fd0000;
+}
+
+.correct_predict {
+  background: #06ff61;
+}
