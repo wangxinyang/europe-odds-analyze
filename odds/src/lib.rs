@@ -19,6 +19,9 @@ pub trait EuropeOdds {
     /// get all bookmaker data
     async fn list_bookermaker(&self) -> Result<Vec<BookMaker>, OddsError>;
 
+    /// query bookmaker data by id
+    async fn query_bookermaker_with_id(&self, id: BookMakerId) -> Result<BookMaker, OddsError>;
+
     /// add bookmaker data to persistence
     async fn create_bookermaker(&self, bookmaker: BookMaker) -> Result<Vec<BookMaker>, OddsError>;
 

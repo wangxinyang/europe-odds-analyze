@@ -78,6 +78,16 @@ impl EuropeOdds for OddsManager {
         Ok(book_makers)
     }
 
+    /// query bookmaker data by id
+    async fn query_bookermaker_with_id(&self, id: BookMakerId) -> Result<BookMaker, OddsError> {
+        let book_makers = sqlx::query_as("SELECT * FROM euro.bookmakers where id = $1")
+            .bind(id)
+            .fetch_one(&self.conn)
+            .await?;
+
+        Ok(book_makers)
+    }
+
     /// get all league data
     async fn list_leagues(&self) -> Result<Vec<League>, OddsError> {
         let leagues = sqlx::query_as("SELECT * FROM euro.leagues ORDER BY created_at ASC")

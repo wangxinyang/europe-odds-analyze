@@ -101,7 +101,7 @@ function LeagueUpdate() {
         <Form.Item {...formTailLayout}>
           <Space size={8}>
             <Button type="primary" danger onClick={handleSaveInfo}>
-              添加
+              更新
             </Button>
             <Button type="primary" onClick={() => window.history.back()}>
               返回
