@@ -1,11 +1,10 @@
 import { Button, Form, Input, message, Popconfirm, Select, Space, Table } from 'antd'
 import { useEffect, useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
-import { Link } from 'react-router-dom'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 
-function Team() {
+function TeamUpdate() {
   const formItemLayout = {
     labelCol: { span: 4 },
     wrapperCol: { span: 8 },
@@ -59,12 +58,9 @@ function Team() {
       key: 'action',
       render: (_, record, _index) => {
         return (
-          <Space>
-            <Link to={`/team/${record.id}`}>详情</Link>
-            <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
-              <a>删除</a>
-            </Popconfirm>
-          </Space>
+          <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
+            <a>删除</a>
+          </Popconfirm>
         )
       },
     },
@@ -201,18 +197,17 @@ function Team() {
         </Form.Item>
         <Form.Item {...formTailLayout}>
           <Space size={8}>
-            <Button type="primary" onClick={handleSearchInfo}>
-              查询
-            </Button>
             <Button type="primary" danger onClick={handleSaveInfo}>
-              添加
+              更新
+            </Button>
+            <Button type="primary" onClick={() => window.history.back()}>
+              返回
             </Button>
           </Space>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} />
     </>
   )
 }
 
-export default Team
+export default TeamUpdate

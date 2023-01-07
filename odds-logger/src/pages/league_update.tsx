@@ -1,11 +1,10 @@
 import { Alert, Button, Form, Input, message, Popconfirm, Space, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 
-function League() {
+function LeagueUpdate() {
   const formItemLayout = {
     labelCol: { span: 4 },
     wrapperCol: { span: 8 },
@@ -23,39 +22,6 @@ function League() {
     name: string
     note: string
   }
-
-  const columns: ColumnsType<DataType> = [
-    {
-      title: 'ID',
-      dataIndex: 'index',
-      key: 'index',
-      render: (text) => <a>{text}</a>,
-    },
-    {
-      title: '联赛名',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '备注',
-      key: 'note',
-      dataIndex: 'note',
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (_, record, _index) => {
-        return (
-          <Space>
-            <Link to={`/league/${record.id}`}>详情</Link>
-            <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
-              <a>删除</a>
-            </Popconfirm>
-          </Space>
-        )
-      },
-    },
-  ]
 
   const [form] = Form.useForm()
   const [data, setData] = useState<DataType[]>([])
@@ -134,18 +100,17 @@ function League() {
         </Form.Item>
         <Form.Item {...formTailLayout}>
           <Space size={8}>
-            <Button type="primary" onClick={handleSearchInfo}>
-              查询
-            </Button>
             <Button type="primary" danger onClick={handleSaveInfo}>
               添加
+            </Button>
+            <Button type="primary" onClick={() => window.history.back()}>
+              返回
             </Button>
           </Space>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} />
     </>
   )
 }
 
-export default League
+export default LeagueUpdate

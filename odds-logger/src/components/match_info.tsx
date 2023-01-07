@@ -2,21 +2,19 @@ import { Button, Col, DatePicker, Form, Input, Row, Select, Space } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api'
-import { error, success } from '../utils'
-import { MessageInstance } from 'antd/es/message/interface'
-import dayjs from 'dayjs'
-import Odds from './odds'
 import {
   DataType,
   MatchInfoDataType,
-  MatchOddsFormType,
+  MatchInfoFormType,
   OddsDataType,
-  OddsSubmitType,
-  OddsType,
-  OddsUpdateDataType,
+  OddsFormType,
   SelectType,
 } from '../types/data'
 import TextArea from 'antd/es/input/TextArea'
+import { MessageInstance } from 'antd/es/message/interface'
+import dayjs from 'dayjs'
+import { error, success } from '../utils'
+import Odds from './odds'
 
 const formItemLayout = {
   labelCol: { span: 4 },
@@ -142,16 +140,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
         // query odds info by match id
         if (matchInfo) {
           let odds = await invoke<OddsDataType[]>('query_odds_by_id', { id: matchInfo.id })
-          let odds_res: OddsUpdateDataType[] = []
-          odds.map((odd, index) => {
-            odds_res.push({
-              ...odd,
-              key: index,
-              name: index,
-              isListField: true,
-              fieldKey: index,
-            })
-          })
           matchInfo.oddsInfo = odds
           setUpdateData(matchInfo)
         }
@@ -186,6 +174,8 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       const matchInfo = buildMatchInfoByUpdate(values)
       const oddsInfos = buildOddsInfoByUpdate(values.odds)
       await invoke<number>('update_match_odds', { matchInfo, oddsInfos })
+      // page back
+      window.history.back()
       success(messageApi, 'Successful: 更新成功')
     } catch (err) {
       console.log('handleUpdateInfo error is:', err)
@@ -215,7 +205,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     }
   }
 
-  const buildMatchInfoBySave = (values: MatchOddsFormType) => {
+  const buildMatchInfoBySave = (values: MatchInfoFormType) => {
     let matchInfo = {
       id: 0,
       league_id: values.leagueInfo.value,
@@ -237,7 +227,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     return matchInfo
   }
 
-  const buildMatchInfoByUpdate = (values: MatchOddsFormType) => {
+  const buildMatchInfoByUpdate = (values: MatchInfoFormType) => {
     let matchInfo = {
       id: parseInt(match_id as string),
       league_id: updateData.league_id,
@@ -259,8 +249,8 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     return matchInfo
   }
 
-  const buildOddsInfoBySave = (odds: OddsType[]) => {
-    let oddsInfos: OddsSubmitType[] = []
+  const buildOddsInfoBySave = (odds: OddsFormType[]) => {
+    let oddsInfos: OddsDataType[] = []
     odds.map((item) => {
       oddsInfos.push({
         ...item,
@@ -273,8 +263,8 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     return oddsInfos
   }
 
-  const buildOddsInfoByUpdate = (odds: OddsType[]) => {
-    let oddsInfos: OddsSubmitType[] = []
+  const buildOddsInfoByUpdate = (odds: OddsFormType[]) => {
+    let oddsInfos: OddsDataType[] = []
     odds.map((item, index) => {
       oddsInfos.push({
         ...item,
@@ -490,16 +480,16 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
               <Space size={8}>
                 {is_add && (
                   <>
-                    <Button type="primary" onClick={handleSaveInfo}>
+                    <Button type="primary" danger onClick={handleSaveInfo}>
                       保存
                     </Button>
-                    <Button type="primary" danger onClick={() => form.resetFields()}>
+                    <Button type="primary" onClick={() => form.resetFields()}>
                       清空
                     </Button>
                   </>
                 )}
                 {is_update && (
-                  <Button type="primary" onClick={handleUpdateInfo}>
+                  <Button type="primary" danger onClick={handleUpdateInfo}>
                     更新
                   </Button>
                 )}
@@ -509,7 +499,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
                   </Button>
                 )}
                 {(is_add || is_update) && (
-                  <Button type="primary" danger onClick={() => window.history.back()}>
+                  <Button type="primary" onClick={() => window.history.back()}>
                     返回
                   </Button>
                 )}

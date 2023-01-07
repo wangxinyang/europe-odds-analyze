@@ -1,11 +1,10 @@
-import { Alert, Button, Form, Input, message, Popconfirm, Space, Table, Tag } from 'antd'
+import { Button, Form, Input, message, Popconfirm, Space, Table } from 'antd'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 
-function League() {
+function BookMakerUpdate() {
   const formItemLayout = {
     labelCol: { span: 4 },
     wrapperCol: { span: 8 },
@@ -21,6 +20,7 @@ function League() {
     id: number
     index: number
     name: string
+    url: string
     note: string
   }
 
@@ -32,9 +32,14 @@ function League() {
       render: (text) => <a>{text}</a>,
     },
     {
-      title: '联赛名',
+      title: '公司名',
       dataIndex: 'name',
       key: 'name',
+    },
+    {
+      title: '官网',
+      dataIndex: 'url',
+      key: 'url',
     },
     {
       title: '备注',
@@ -46,12 +51,9 @@ function League() {
       key: 'action',
       render: (_, record, _index) => {
         return (
-          <Space>
-            <Link to={`/league/${record.id}`}>详情</Link>
-            <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
-              <a>删除</a>
-            </Popconfirm>
-          </Space>
+          <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
+            <a>删除</a>
+          </Popconfirm>
         )
       },
     },
@@ -74,7 +76,7 @@ function League() {
   // initial list data
   useEffect(() => {
     const get_lists = async () => {
-      let lists = await invoke<DataType[]>('get_league_lists')
+      let lists = await invoke<DataType[]>('get_book_maker_lists')
       render_list(lists)
     }
     get_lists()
@@ -82,7 +84,7 @@ function League() {
 
   // query bookmaker list
   const handleSearchInfo = async () => {
-    let lists = await invoke<DataType[]>('get_league_lists')
+    let lists = await invoke<DataType[]>('get_book_maker_lists')
     render_list(lists)
   }
 
@@ -91,8 +93,9 @@ function League() {
     try {
       const values = await form.validateFields()
       // call rust async function
-      let lists = await invoke<DataType[]>('save_league_info', {
+      let lists = await invoke<DataType[]>('save_book_maker_info', {
         name: values.name,
+        url: values.url == undefined ? '' : values.url,
         note: values.note == undefined ? '' : values.note,
       })
       render_list(lists)
@@ -105,7 +108,7 @@ function League() {
   const handleDelete = async (record: DataType) => {
     try {
       let { id } = record
-      let lists = await invoke<DataType[]>('delete_league_info', { id })
+      let lists = await invoke<DataType[]>('delete_book_maker_info', { id })
       render_list(lists)
       success(messageApi, 'Successful: 删除成功')
     } catch (errorInfo) {
@@ -120,13 +123,16 @@ function League() {
         <Form.Item
           {...formItemLayout}
           name="name"
-          label="联赛名称"
+          label="公司名"
           rules={[
             {
               required: true,
-              message: '请输入联赛名称',
+              message: '请输入公司名',
             },
           ]}>
+          <Input />
+        </Form.Item>
+        <Form.Item {...formItemLayout} name="url" label="官网">
           <Input />
         </Form.Item>
         <Form.Item {...formItemLayout} name="note" label="备注">
@@ -134,18 +140,17 @@ function League() {
         </Form.Item>
         <Form.Item {...formTailLayout}>
           <Space size={8}>
-            <Button type="primary" onClick={handleSearchInfo}>
-              查询
-            </Button>
             <Button type="primary" danger onClick={handleSaveInfo}>
               添加
+            </Button>
+            <Button type="primary" onClick={() => window.history.back()}>
+              返回
             </Button>
           </Space>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} />
     </>
   )
 }
 
-export default League
+export default BookMakerUpdate

@@ -1,6 +1,7 @@
 import { Button, Form, Input, message, Popconfirm, Space, Table } from 'antd'
 import { useEffect, useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
+import { Link } from 'react-router-dom'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 
@@ -51,9 +52,12 @@ function BookMaker() {
       key: 'action',
       render: (_, record, _index) => {
         return (
-          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
-            <a>Delete</a>
-          </Popconfirm>
+          <Space>
+            <Link to={`/bookmaker/${record.id}`}>详情</Link>
+            <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
+              <a>删除</a>
+            </Popconfirm>
+          </Space>
         )
       },
     },
@@ -144,7 +148,7 @@ function BookMaker() {
               查询
             </Button>
             <Button type="primary" danger onClick={handleSaveInfo}>
-              保存
+              添加
             </Button>
           </Space>
         </Form.Item>

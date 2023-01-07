@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { invoke } from '@tauri-apps/api'
 import { message, Popconfirm, Space } from 'antd'
 import Table, { ColumnsType } from 'antd/es/table'
-import { DataType, MatchInfoDataType, MatchInfoTableType } from '../types/data'
+import { MatchInfoDataType, MatchInfoTableType } from '../types/data'
 import { error, success } from '../utils'
 import MatchInfo from '../components/match_info'
-import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 
 function MatchQuery() {
@@ -83,7 +83,7 @@ function MatchQuery() {
         return (
           <Space size={8}>
             <Link to={`/matchDetail/${record.id}`}>详情</Link>
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
+            <Popconfirm title="确定删除?" onConfirm={() => handleDelete(record)}>
               <a>删除</a>
             </Popconfirm>
           </Space>
@@ -96,7 +96,7 @@ function MatchQuery() {
     try {
       let { id } = record
       render_list(id)
-      await invoke<DataType[]>('delete_match_info', { id })
+      await invoke('delete_match_info', { id })
       success(messageApi, 'Successful: 删除成功')
     } catch (errorInfo) {
       error(messageApi, 'Failed: 删除失败, 请检查数据')
@@ -130,9 +130,8 @@ function MatchQuery() {
     setTableData(result)
   }
 
-  const getRowClassName = (record: MatchInfoTableType, index: number) => {
-    console.log('record is', record)
-
+  // change table columns color with result and predict_result
+  const getRowClassName = (record: MatchInfoTableType, _index: number) => {
     let className = ''
     if (record.result !== '') {
       if (record.result !== record.predict_result) {
