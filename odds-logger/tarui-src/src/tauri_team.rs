@@ -36,3 +36,28 @@ pub async fn delete_team_info(
     let teams = manager.delete_team(id).await?;
     Ok(teams)
 }
+
+#[tauri::command]
+pub async fn get_team_with_id(manager: State<'_, OddsManager>, id: i32) -> Result<Team, OddsError> {
+    let manager = &*manager;
+    let team = manager.query_team_with_id(id).await?;
+    Ok(team)
+}
+
+#[tauri::command]
+pub async fn update_team_info(
+    manager: State<'_, OddsManager>,
+    id: i32,
+    name: String,
+    note: String,
+) -> Result<Vec<Team>, OddsError> {
+    let manager = &*manager;
+    let team = TeamBuilder::default()
+        .id(id)
+        .name(name)
+        .note(note)
+        .build()
+        .unwrap();
+    let teams = manager.update_team(team).await?;
+    Ok(teams)
+}

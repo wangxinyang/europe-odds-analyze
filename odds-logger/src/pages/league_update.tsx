@@ -1,8 +1,9 @@
-import { Alert, Button, Form, Input, message, Popconfirm, Space, Table, Tag } from 'antd'
-import { useEffect, useState } from 'react'
+import { Button, Form, Input, message, Space } from 'antd'
+import { useEffect } from 'react'
 import type { ColumnsType } from 'antd/es/table'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
+import { useParams } from 'react-router-dom'
 
 function LeagueUpdate() {
   const formItemLayout = {
@@ -23,59 +24,45 @@ function LeagueUpdate() {
     note: string
   }
 
+  const { id } = useParams<{ id: string }>()
   const [form] = Form.useForm()
-  const [data, setData] = useState<DataType[]>([])
   const [messageApi, contextHolder] = message.useMessage()
 
-  // render bookmaker list data in page
-  const render_list = (lists: DataType[]) => {
-    // clear data
-    setData([])
-    lists.map((item, index) => {
-      let data = { ...item, key: (index + 1).toString(), index: index + 1 }
-      setData((prev) => [...prev, data])
+  // render the league data
+  const render_league = (league: DataType) => {
+    form.setFieldsValue({
+      name: league.name,
+      note: league.note,
     })
   }
 
   // initial list data
   useEffect(() => {
-    const get_lists = async () => {
-      let lists = await invoke<DataType[]>('get_league_lists')
-      render_list(lists)
+    const getLeagueById = async () => {
+      let league = await invoke<DataType>('get_league_with_id', { id: parseInt(id as string) })
+      render_league(league)
     }
-    get_lists()
+    getLeagueById()
   }, [])
 
-  // query bookmaker list
-  const handleSearchInfo = async () => {
-    let lists = await invoke<DataType[]>('get_league_lists')
-    render_list(lists)
-  }
-
-  // handle bookmaker save
+  // handle bookmaker update
   const handleSaveInfo = async () => {
+    console.log('id is:', id)
+
     try {
       const values = await form.validateFields()
       // call rust async function
-      let lists = await invoke<DataType[]>('save_league_info', {
+      await invoke('update_league_info', {
+        id: parseInt(id as string),
         name: values.name,
         note: values.note == undefined ? '' : values.note,
       })
-      render_list(lists)
-      success(messageApi, 'Successful: 保存成功')
+      // page back
+      window.history.back()
+      success(messageApi, 'Successful: 更新成功')
     } catch (errorInfo) {
-      error(messageApi, 'Failed: 保存失败, 请检查数据')
-    }
-  }
-
-  const handleDelete = async (record: DataType) => {
-    try {
-      let { id } = record
-      let lists = await invoke<DataType[]>('delete_league_info', { id })
-      render_list(lists)
-      success(messageApi, 'Successful: 删除成功')
-    } catch (errorInfo) {
-      error(messageApi, 'Failed: 删除失败, 请检查数据')
+      console.log(errorInfo)
+      error(messageApi, 'Failed: 更新失败, 请检查数据')
     }
   }
 

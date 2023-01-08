@@ -1,9 +1,9 @@
-import { Button, Form, Input, message, Popconfirm, Space, Table } from 'antd'
-import { useEffect, useState } from 'react'
-import type { ColumnsType } from 'antd/es/table'
+import { Button, Form, Input, message, Space } from 'antd'
+import { useEffect } from 'react'
 import { invoke } from '@tauri-apps/api'
 import { error, success } from '../utils'
 import { useParams } from 'react-router-dom'
+import { BookMakerDataType } from '../types/data'
 
 function BookMakerUpdate() {
   const formItemLayout = {
@@ -21,39 +21,44 @@ function BookMakerUpdate() {
   const [messageApi, contextHolder] = message.useMessage()
 
   // render bookmaker list data in page
-  // const render_list = (lists: DataType[]) => {
-  //   // clear data
-  //   setData([])
-  //   lists.map((item, index) => {
-  //     let data = { ...item, key: (index + 1).toString(), index: index + 1 }
-  //     setData((prev) => [...prev, data])
-  //   })
-  // }
+  const render_list = (bookmaker: BookMakerDataType) => {
+    form.setFieldsValue({
+      name: bookmaker.name,
+      url: bookmaker.url,
+      note: bookmaker.note,
+    })
+  }
 
   // initial list data
-  // useEffect(() => {
-  //   const get_lists = async () => {
-  //     let lists = await invoke<DataType[]>('get_book_maker_lists')
-  //     render_list(lists)
-  //   }
-  //   get_lists()
-  // }, [])
+  useEffect(() => {
+    const getBookMakerById = async () => {
+      let bookMaker = await invoke<BookMakerDataType>('get_book_maker_with_id', {
+        id: parseInt(id as string),
+      })
+      render_list(bookMaker)
+    }
+    getBookMakerById()
+  }, [])
 
-  // handle bookmaker save
+  // handle bookmaker update
   const handleSaveInfo = async () => {
-    // try {
-    //   const values = await form.validateFields()
-    //   // call rust async function
-    //   let lists = await invoke<DataType[]>('save_book_maker_info', {
-    //     name: values.name,
-    //     url: values.url == undefined ? '' : values.url,
-    //     note: values.note == undefined ? '' : values.note,
-    //   })
-    //   render_list(lists)
-    //   success(messageApi, 'Successful: 保存成功')
-    // } catch (errorInfo) {
-    //   error(messageApi, 'Failed: 保存失败, 请检查数据')
-    // }
+    try {
+      const values = await form.validateFields()
+      // call rust async function
+      await invoke('update_book_maker', {
+        id: parseInt(id as string),
+        name: values.name,
+        url: values.url == undefined ? '' : values.url,
+        note: values.note == undefined ? '' : values.note,
+      })
+      // page back
+      window.history.back()
+      success(messageApi, 'Successful: 更新成功')
+    } catch (errorInfo) {
+      console.log(errorInfo)
+
+      error(messageApi, 'Failed: 更新失败, 请检查数据')
+    }
   }
 
   return (

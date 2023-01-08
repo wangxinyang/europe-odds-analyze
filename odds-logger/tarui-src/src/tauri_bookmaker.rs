@@ -38,3 +38,33 @@ pub async fn delete_book_maker_info(
     let bms = manager.delete_bookermaker(id).await?;
     Ok(bms)
 }
+
+#[tauri::command]
+pub async fn get_book_maker_with_id(
+    manager: State<'_, OddsManager>,
+    id: i32,
+) -> Result<BookMaker, OddsError> {
+    let manager = &*manager;
+    let book_maker = manager.query_bookermaker_with_id(id).await?;
+    Ok(book_maker)
+}
+
+#[tauri::command]
+pub async fn update_book_maker(
+    manager: State<'_, OddsManager>,
+    id: i32,
+    name: String,
+    url: String,
+    note: String,
+) -> Result<Vec<BookMaker>, OddsError> {
+    let manager = &*manager;
+    let book_maker = BookMakerBuilder::default()
+        .id(id)
+        .name(name)
+        .url(url)
+        .note(note)
+        .build()
+        .unwrap();
+    let bms = manager.update_bookermaker(book_maker).await?;
+    Ok(bms)
+}

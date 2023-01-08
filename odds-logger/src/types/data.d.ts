@@ -15,6 +15,10 @@ export interface DataType extends BasicDataType {
   note: string
 }
 
+export interface BookMakerDataType extends DataType {
+  url: string
+}
+
 // define game record query page table type
 export interface MatchInfoTableType extends BasicDataType {
   league_name: string

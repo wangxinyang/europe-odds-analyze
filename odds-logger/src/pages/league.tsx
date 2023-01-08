@@ -80,13 +80,13 @@ function League() {
     get_lists()
   }, [])
 
-  // query bookmaker list
+  // query league list
   const handleSearchInfo = async () => {
     let lists = await invoke<DataType[]>('get_league_lists')
     render_list(lists)
   }
 
-  // handle bookmaker save
+  // handle league save
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
