@@ -159,11 +159,13 @@ impl EuropeOdds for OddsManager {
 
     /// query team data by id
     async fn query_team_with_id(&self, id: TeamId) -> Result<Team, OddsError> {
-        let team = sqlx::query_as("SELECT * FROM euro.teams where id = $1")
-            .bind(id)
-            .fetch_one(&self.conn)
-            .await?;
-
+        let team = sqlx::query_as(
+            "SELECT teams.*, leagues.name league_name FROM euro.teams teams
+        , euro.leagues leagues where teams.league_id = leagues.id AND teams.id = $1",
+        )
+        .bind(id)
+        .fetch_one(&self.conn)
+        .await?;
         Ok(team)
     }
 

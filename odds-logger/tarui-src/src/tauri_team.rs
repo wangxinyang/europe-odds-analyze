@@ -48,12 +48,14 @@ pub async fn get_team_with_id(manager: State<'_, OddsManager>, id: i32) -> Resul
 pub async fn update_team_info(
     manager: State<'_, OddsManager>,
     id: i32,
+    lid: i32,
     name: String,
     note: String,
 ) -> Result<Vec<Team>, OddsError> {
     let manager = &*manager;
     let team = TeamBuilder::default()
         .id(id)
+        .league_id(lid)
         .name(name)
         .note(note)
         .build()

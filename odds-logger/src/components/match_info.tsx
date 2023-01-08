@@ -174,8 +174,6 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
       const matchInfo = buildMatchInfoByUpdate(values)
       const oddsInfos = buildOddsInfoByUpdate(values.odds)
       await invoke<number>('update_match_odds', { matchInfo, oddsInfos })
-      // page back
-      window.history.back()
       success(messageApi, 'Successful: 更新成功')
     } catch (err) {
       console.log('handleUpdateInfo error is:', err)

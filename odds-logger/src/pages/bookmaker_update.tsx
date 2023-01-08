@@ -44,6 +44,8 @@ function BookMakerUpdate() {
   const handleSaveInfo = async () => {
     try {
       const values = await form.validateFields()
+      console.log(values)
+
       // call rust async function
       await invoke('update_book_maker', {
         id: parseInt(id as string),
@@ -51,12 +53,9 @@ function BookMakerUpdate() {
         url: values.url == undefined ? '' : values.url,
         note: values.note == undefined ? '' : values.note,
       })
-      // page back
-      window.history.back()
       success(messageApi, 'Successful: 更新成功')
     } catch (errorInfo) {
       console.log(errorInfo)
-
       error(messageApi, 'Failed: 更新失败, 请检查数据')
     }
   }

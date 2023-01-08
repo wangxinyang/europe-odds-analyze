@@ -57,8 +57,6 @@ function LeagueUpdate() {
         name: values.name,
         note: values.note == undefined ? '' : values.note,
       })
-      // page back
-      window.history.back()
       success(messageApi, 'Successful: 更新成功')
     } catch (errorInfo) {
       console.log(errorInfo)
