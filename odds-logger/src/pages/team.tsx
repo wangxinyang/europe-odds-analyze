@@ -210,7 +210,7 @@ function Team() {
           </Space>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
     </>
   )
 }

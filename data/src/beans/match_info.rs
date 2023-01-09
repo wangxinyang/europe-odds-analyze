@@ -10,8 +10,8 @@ pub struct MatchInfoQuery {
     pub game_year: Option<String>,
     pub game_round: Option<String>,
     pub is_desc: bool,
-    pub cursor: i64,
-    pub page_size: i64,
+    pub cursor: i32,
+    pub page_size: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

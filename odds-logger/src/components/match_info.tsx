@@ -127,7 +127,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
         game_year: values.game_year,
         game_round: values.game_round,
         is_desc: true,
-        cursor: 100,
+        cursor: 1,
         page_size: 10,
       }
       let matchInfos = await invoke<MatchInfoDataType[]>('query_match_info', { query })

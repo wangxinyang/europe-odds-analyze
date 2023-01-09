@@ -143,6 +143,11 @@ function MatchQuery() {
     return className
   }
 
+  // get page content with click page number
+  const getPageContent = (page: number, pageSize: number) => {
+    console.log(page, pageSize)
+  }
+
   return (
     <>
       {contextHolder}
@@ -152,7 +157,12 @@ function MatchQuery() {
         messageApi={messageApi}
         handleValue={getMatchInfoTableData}
       />
-      <Table columns={columns} dataSource={tableData} rowClassName={getRowClassName} />
+      <Table
+        columns={columns}
+        dataSource={tableData}
+        rowClassName={getRowClassName}
+        pagination={{ pageSize: 5, onChange: getPageContent }}
+      />
     </>
   )
 }

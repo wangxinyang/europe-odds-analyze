@@ -13,9 +13,9 @@ html {
 }
 
 .error_predict {
-  background: #fd0000;
+  background: #06ff61;
 }
 
 .correct_predict {
-  background: #06ff61;
+  background: #fd0000;
 }

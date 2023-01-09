@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .path_resolver()
                 .resolve_resource("fixtures/db/config.yml")
                 .expect("failed to resolve resource");
-            let file = std::fs::File::open(&resource_path).unwrap();
+            let file = std::fs::File::open(resource_path).unwrap();
             let config = Config::from_file(file)?;
             let odds_manager = block_on(OddsManager::from_config(&config.db))?;
             app.manage(odds_manager);

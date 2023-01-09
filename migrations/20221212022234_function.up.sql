@@ -5,31 +5,23 @@ CREATE OR REPLACE FUNCTION euro.query(
     game_year VARCHAR,
     game_round VARCHAR,
     is_desc bool DEFAULT false,
-    cursor bigint default null,
-    page_size bigint default 10
+    page integer default null,
+    page_size integer default 10
 ) RETURNS TABLE (LIKE euro.matches) AS $$
 DECLARE
     _sql text;
     BEGIN
         -- if cursor is null, set it to 0 if is_desc is false, or to max int if is_desc is true
-        IF cursor IS NULL or cursor < 0 THEN
-            IF is_desc THEN
-                cursor := 2147483647;
-            ELSE
-                cursor := 0;
-            END IF;
-        END IF;
-        -- if page_size is not between 10 and 100, set it to 10
-        IF page_size < 10 OR page_size > 100 THEN
+        IF page_size > 100 THEN
             page_size := 10;
+        END IF;
+        IF page < 1 THEN
+            page := 1;
         END IF;
         -- format the qurey based on parameters
         _sql := format(
-            'select * from euro.matches where %s and %s and %s and %s and %s order by id %s limit %L::integer',
-            CASE
-                WHEN is_desc THEN 'id < ' || cursor
-                ELSE 'id > ' || cursor
-            END,
+            'select * from euro.matches where %s and %s and %s and %s
+            order by id %s limit %L::integer offset %s',
             CASE
                 WHEN lid = 0 AND tid = 0  THEN 'TRUE'
                 WHEN lid = 0 THEN '(home_team_id = ' || tid  || 'or away_team_id = ' || tid || ')'
@@ -52,7 +44,8 @@ DECLARE
                 WHEN is_desc THEN 'DESC'
                 ELSE 'ASC'
             END,
-            page_size
+            page_size,
+            (page - 1) * page_size
         );
 
         -- log the sql
