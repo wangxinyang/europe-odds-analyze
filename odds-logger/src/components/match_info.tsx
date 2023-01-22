@@ -62,7 +62,7 @@ function MatchInfo({ match_id, is_add, is_update, messageApi, handleValue }: Mat
     let options: { label: string; value: number }[] = []
     const get_team_lists_with_league = async () => {
       try {
-        let teams = await invoke<DataType[]>('query_teams_with_league', {
+        let teams = await invoke<DataType[]>('query_team_info_by_league', {
           id: selectedLeagueIndex,
         })
 

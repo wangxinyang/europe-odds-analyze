@@ -63,3 +63,13 @@ pub async fn update_team_info(
     let teams = manager.update_team(team).await?;
     Ok(teams)
 }
+
+#[tauri::command]
+pub async fn query_team_info_by_league(
+    manager: State<'_, OddsManager>,
+    id: i32,
+) -> Result<Vec<Team>, OddsError> {
+    let manager = &*manager;
+    let teams = manager.query_teams_with_condition(id).await?;
+    Ok(teams)
+}

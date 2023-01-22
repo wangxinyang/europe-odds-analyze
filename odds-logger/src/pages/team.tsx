@@ -73,6 +73,7 @@ function Team() {
   const [form] = Form.useForm()
   const [leagueData, setLeagueData] = useState<LeagueDataType[]>([])
   const [data, setData] = useState<DataType[]>([])
+  const [leagueId, setLeagueId] = useState<string>('')
   const [messageApi, contextHolder] = message.useMessage()
 
   // render league list data in page
@@ -111,10 +112,12 @@ function Team() {
     get_team_lists()
   }, [])
 
-  // query bookmaker list
+  // query teams list with league id
   const handleSearchInfo = async () => {
     try {
-      let lists = await invoke<DataType[]>('get_team_lists')
+      let lists = await invoke<DataType[]>('query_team_info_by_league', {
+        id: parseInt(leagueId, 10),
+      })
       render_list(lists)
     } catch (errorInfo) {
       error(messageApi, 'Failed: 查询失败, 请检查数据')
@@ -160,6 +163,10 @@ function Team() {
     return options
   }
 
+  const handleLeagueChange = (value: string) => {
+    setLeagueId(value)
+  }
+
   return (
     <>
       {contextHolder}
@@ -182,6 +189,7 @@ function Team() {
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             options={options(leagueData)}
+            onChange={handleLeagueChange}
           />
         </Form.Item>
         <Form.Item
@@ -210,7 +218,7 @@ function Team() {
           </Space>
         </Form.Item>
       </Form>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+      <Table columns={columns} dataSource={data} pagination={{ pageSize: 7 }} />
     </>
   )
 }

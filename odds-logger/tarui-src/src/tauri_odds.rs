@@ -1,7 +1,5 @@
 use chrono::NaiveDateTime;
-use data::{
-    MatchInfo, MatchInfoQuery, Matches, MatchesBuilder, Odds, OddsBuilder, OddsError, Team,
-};
+use data::{MatchInfo, MatchInfoQuery, Matches, MatchesBuilder, Odds, OddsBuilder, OddsError};
 use odds::{EuropeOdds, OddsManager};
 use serde::Deserialize;
 use tauri::State;
@@ -36,16 +34,6 @@ pub struct MatchesInfo {
     pub predict_game_result: Option<String>,
     pub history_note: Option<String>,
     pub note: Option<String>,
-}
-
-#[tauri::command]
-pub async fn query_teams_with_league(
-    manager: State<'_, OddsManager>,
-    id: i32,
-) -> Result<Vec<Team>, OddsError> {
-    let manager = &*manager;
-    let teams = manager.query_teams_with_league(id).await?;
-    Ok(teams)
 }
 
 // Result<Vec<MatchInfo>, OddsError>

@@ -170,7 +170,7 @@ impl EuropeOdds for OddsManager {
     }
 
     /// query team data by league id
-    async fn query_teams_with_league(&self, id: LeagueId) -> Result<Vec<Team>, OddsError> {
+    async fn query_teams_with_condition(&self, id: LeagueId) -> Result<Vec<Team>, OddsError> {
         let teams = sqlx::query_as(
             "SELECT teams.*, leagues.name league_name FROM euro.teams teams,
             euro.leagues leagues where teams.league_id = leagues.id and leagues.id = $1 ORDER BY teams.created_at DESC",
